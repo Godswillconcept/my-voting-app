@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  first_name String
+  last_name  String
+  username   String   @unique
+  email      String   @unique
+  gender     Gender?
+  dob        DateTime
+  photo      String?
+  password   String
+  phone      String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Vote       Vote[]
+  Review     Review[]
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+model Platform {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String @db.Text // Change the data type to Text
+  emblem     String
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  Poll       Poll[]
+  Candidate  Candidate[]
+}
+
+model Poll {
+  id          Int      @id @default(autoincrement())
+  name        String
+  platform    Platform @relation(fields: [platform_id], references: [id])
+  platform_id Int
+  start_time  DateTime
+  end_time    DateTime
+  Vote        Vote[]
+  Review      Review[]
+}
+
+model Vote {
+  id           Int       @id @default(autoincrement())
+  user         User      @relation(fields: [user_id], references: [id])
+  user_id      Int
+  poll         Poll      @relation(fields: [poll_id], references: [id])
+  poll_id      Int
+  candidate    Candidate @relation(fields: [candidate_id], references: [id])
+  candidate_id Int
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}
+
+model Candidate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  bio         String?
+  platform    Platform @relation(fields: [platform_id], references: [id])
+  platform_id Int
+  photo       String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Vote        Vote[]
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  comment    String?
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    Int
+  poll       Poll     @relation(fields: [poll_id], references: [id])
+  poll_id    Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
