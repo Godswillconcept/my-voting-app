@@ -1,12 +1,63 @@
-import React from 'react';
-import { Button, FileInput, Label, Modal, TextInput } from 'flowbite-react';
+import React, { useState } from "react";
+import { Button, FileInput, Label, Modal, TextInput } from "flowbite-react";
+import axios from "axios";
 
-const PlatformModal = ({ openModal, onClose, onSubmit, platform, handleChange }) => {
+const PlatformModal = ({ openModal, onClose }) => {
+  const [platform, setPlatform] = useState({
+    name: "",
+    description: "",
+    emblem: "",
+  });
+
+  const handleChange = (e) => {
+    if (e.target.name === "emblem") {
+      setPlatform({
+        ...platform,
+        emblem: e.target.files[0], // Store the file itself, not the filename
+      });
+    } else {
+      const { name, value } = e.target;
+      setPlatform((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(platform);
+    const formData = new FormData();
+    formData.append("name", platform.name);
+    formData.append("description", platform.description);
+    formData.append("emblem", platform.emblem);
+
+    // sending the information to the database
+
+    try {
+      const url = "http://localhost:3300/platforms/platform";
+      const response = await axios.post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Set the content type for FormData
+        },
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.log({ status: "failed", data: error });
+    }
+    // clearing form field
+    setPlatform({
+      name: "",
+      description: "",
+      emblem: "",
+    });
+    onClose(onClose);
+  };
   return (
     <Modal show={openModal} onClose={onClose}>
       <Modal.Header>Add New Platform</Modal.Header>
       <Modal.Body>
-        <form onSubmit={onSubmit} enctype="multipart/form-data">
+        <form enctype="multipart/form-data">
           <div className="space-y-6">
             <div>
               <div className="mb-2 block">
@@ -56,7 +107,7 @@ const PlatformModal = ({ openModal, onClose, onSubmit, platform, handleChange })
         </form>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={onSubmit}>Submit</Button>
+      <Button onClick={handleSubmit}>Submit</Button>
         <Button
           color="transparent"
           className="bg-red-500 text-white hover:bg-red-800"

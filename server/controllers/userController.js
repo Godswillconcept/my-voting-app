@@ -1,9 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
-
 const { unlink } = require("fs/promises");
-const { uploadFile, convertDOBtoISO } = require("../helpers/helper");
+const fs = require("fs");
+const {
+  uploadFile,
+  dateToISOString,
+  parseExcel,
+} = require("../helpers/helper");
 
 let getAllUsers = async (req, res) => {
   try {
@@ -43,14 +47,14 @@ const createUser = async (req, res) => {
       fileName = await uploadFile(req.files.photo, "./uploads/users");
     }
 
-    const isoDob = convertDOBtoISO(dob);
+    const isoDob = dateToISOString(dob);
 
     const user = await prisma.user.create({
       data: {
         ...userData,
         password: hashedPassword,
         dob: isoDob,
-        photo: `users/${fileName}`,
+        photo: !req.files ? null : `users/${fileName}`,
       },
     });
     res.json({ status: "success", data: user });
@@ -65,6 +69,65 @@ const createUser = async (req, res) => {
   }
 };
 
+const bulkCreateUsers = async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send("No files were uploaded.");
+    }
+
+    const excelFile = req.files.file;
+    const uploadPath = "./uploads/excels"; // Set your desired upload path
+
+    // Save the file temporarily
+    const filePath = `${uploadPath}/${excelFile.name}`;
+    await excelFile.mv(filePath);
+
+    // Parse Excel data
+    const usersData = parseExcel(filePath);
+
+    // Log parsed data to check its content
+    fs.unlinkSync(filePath);
+
+    // Hash passwords and format date of birth
+    const hashedUsers = await Promise.all(
+      usersData.map(async (user) => {
+        const formattedDob = new Date(user.dob).toISOString();
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        return { ...user, password: hashedPassword, dob: formattedDob };
+      })
+    );
+
+    // Check for existing phone numbers in the database
+    const createdUsers = [];
+    for (const user of hashedUsers) {
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: {
+            phone: user.phone,
+          },
+        });
+
+        if (!existingUser) {
+          const createdUser = await prisma.user.create({
+            data: user,
+          });
+          createdUsers.push(createdUser);
+        }
+      } catch (error) {
+        console.error(
+          `Error creating user with phone number ${user.phone}:`,
+          error
+        );
+      }
+    }
+
+    res.send("Users uploaded successfully.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 let updateUser = async (req, res) => {
   const { id } = req.params;
   const { password, dob, ...userData } = req.body;
@@ -76,7 +139,7 @@ let updateUser = async (req, res) => {
       fileName = await uploadFile(req.files.photo, "./uploads/users");
     }
 
-    const isoDob = convertDOBtoISO(dob);
+    const isoDob = dateToISOString(dob);
     const updatedUser = await prisma.user.update({
       where: {
         id: parseInt(id),
@@ -85,7 +148,7 @@ let updateUser = async (req, res) => {
         ...userData,
         password: hashedPassword,
         dob: isoDob,
-        photo: `users/${fileName}`,
+        photo: !req.files ? null : `users/${fileName}`,
       },
     });
     res.json({ status: "success", data: updatedUser });
@@ -116,6 +179,7 @@ module.exports = {
   getAllUsers,
   getUserById,
   createUser,
+  bulkCreateUsers,
   updateUser,
   deleteUser,
 };

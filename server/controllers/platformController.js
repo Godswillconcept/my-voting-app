@@ -2,7 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const { unlink } = require("fs/promises");
-const { uploadFile} = require("../helpers/helper");
+const fs = require("fs");
+const { uploadFile, parseExcel } = require("../helpers/helper");
 
 let getAllPlatforms = async (req, res) => {
   try {
@@ -42,8 +43,9 @@ const createPlatform = async (req, res) => {
 
     const platform = await prisma.platform.create({
       data: {
-        name, description,
-        emblem: `platforms/${fileName}`,
+        name,
+        description,
+        emblem: !req.files ? null : `platforms/${fileName}`,
       },
     });
     res.json({ status: "success", data: platform });
@@ -58,9 +60,49 @@ const createPlatform = async (req, res) => {
   }
 };
 
+const bulkCreatePlatforms = async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send("No files were uploaded.");
+    }
+
+    const excelFile = req.files.file;
+    const uploadPath = "./uploads/excels"; // Set your desired upload path
+
+    // Save the file temporarily
+    const filePath = `${uploadPath}/${excelFile.name}`;
+    await excelFile.mv(filePath);
+
+    // Parse Excel data
+    const platformsData = parseExcel(filePath);
+
+
+    // Log parsed data to check its content
+    fs.unlinkSync(filePath);
+
+    // Check for existing phone numbers in the database
+    const createdPlatforms = [];
+    for (const platform of platformsData) {
+      try {
+        const createdPlatform = await prisma.platform.create({
+          data: { ...platform, emblem: "" },
+        });
+        createdPlatforms.push(createdPlatform);
+      } catch (error) {
+        console.error(`Error creating platform:`, error);
+      }
+    }
+
+    res.send("Platforms uploaded successfully.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 let updatePlatform = async (req, res) => {
   const { id } = req.params;
-  const {name, description } = req.body;
+  const { name, description } = req.body;
   let fileName;
 
   try {
@@ -74,7 +116,8 @@ let updatePlatform = async (req, res) => {
         id: parseInt(id),
       },
       data: {
-        name, description,
+        name,
+        description,
         emblem: `platforms/${fileName}`,
       },
     });
@@ -98,7 +141,9 @@ let deletePlatform = async (req, res) => {
     });
     res.json({ status: "success", data: deletedPlatform });
   } catch (error) {
-    res.status(500).json({ status: "failed", error: "Error deleting platform" });
+    res
+      .status(500)
+      .json({ status: "failed", error: "Error deleting platform" });
   }
 };
 
@@ -108,4 +153,5 @@ module.exports = {
   createPlatform,
   updatePlatform,
   deletePlatform,
+  bulkCreatePlatforms,
 };

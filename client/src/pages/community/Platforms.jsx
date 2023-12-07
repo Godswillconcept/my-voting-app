@@ -4,81 +4,34 @@ import Header from "../../partials/Header";
 import WelcomeBanner from "../../partials/dashboard/WelcomeBanner";
 import FilterButton from "../../components/DropdownFilter";
 import Datepicker from "../../components/Datepicker";
-import { Button } from "flowbite-react";
+import { Button, Dropdown } from "flowbite-react";
 import axios from "axios";
 import PlatformModal from "../../community/platforms/PlatformModal";
 import PlatformTable from "../../community/platforms/PlatformTable";
+import PlatformExcelFile from "../../community/platforms/PlatformExcelFile";
 
 function Platforms() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [platform, setPlatform] = useState({
-    name: "",
-    description: "",
-    emblem: "",
-  });
+  const [openPlatformExcelModal, setOpenPlatformExcelModal] = useState(false);
+
   const [platforms, setPlatforms] = useState([]);
 
-  const handleChange = (e) => {
-    if (e.target.name === "emblem") {
-      setPlatform({
-        ...platform,
-        emblem: e.target.files[0], // Store the file itself, not the filename
-      });
-    } else {
-      const { name, value } = e.target;
-      setPlatform((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(platform);
-    const formData = new FormData();
-    formData.append("name", platform.name);
-    formData.append("description", platform.description);
-    formData.append("emblem", platform.emblem);
-
-    // sending the information to the database
-
-    try {
-      const url = "http://localhost:3300/platforms/platform";
-      const response = await axios.post(url, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Set the content type for FormData
-        },
-      });
-      console.log(response.data);
-      await fetchPlatforms();
-    } catch (error) {
-      console.log({ status: "failed", data: error });
-    }
-    // clearing form field
-    setPlatform({
-      name: "",
-      description: "",
-      emblem: "",
-    })
-    setOpenModal(false);
-  };
-
-  const fetchPlatforms = async () => {
-    try {
-      const url = "http://localhost:3300/platforms";
-      const response = await axios.get(url);
-      const { data } = response.data;
-      console.log(data);
-      setPlatforms(data);
-    } catch (error) {
-      console.error("Error fetching platforms:", error);
-    }
-  };
   useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const url = "http://localhost:3300/platforms";
+        const response = await axios.get(url);
+        const { data } = response.data;
+        console.log(data);
+        setPlatforms(data);
+      } catch (error) {
+        console.error("Error fetching platforms:", error);
+      }
+    };
     fetchPlatforms();
   }, []);
+
   const title = "All Platforms 👋";
   const content = "Here is the list of all registered platforms";
 
@@ -104,15 +57,22 @@ function Platforms() {
               {/* Datepicker built with flatpickr */}
               <Datepicker />
               {/* Add view button */}
-              <Button color="blue" onClick={() => setOpenModal(true)}>
-                Add Platform
-              </Button>
+
+              <Dropdown label="Add Platform">
+                <Dropdown.Item onClick={() => setOpenModal(true)}>
+                  Single Platform
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setOpenPlatformExcelModal(true)}>
+                  Upload Excel File
+                </Dropdown.Item>
+              </Dropdown>
               <PlatformModal
                 openModal={openModal}
                 onClose={() => setOpenModal(false)}
-                onSubmit={handleSubmit}
-                platform={platform}
-                handleChange={handleChange}
+              />
+              <PlatformExcelFile
+                openModal={openPlatformExcelModal}
+                onClose={() => setOpenPlatformExcelModal(false)}
               />
             </div>
 

@@ -15,9 +15,17 @@ export function calculateAge(isoDateString) {
 }
 
 export function full_name(fn, ln) {
-    return `${fn} ${ln}`;
+  return `${fn} ${ln}`;
 }
 
 export function image(imageurl) {
-    return (`http://localhost:3300/${imageurl}`)
+  return `http://localhost:3300/${imageurl}`;
+}
+
+export function dateFormat(dateString) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }

@@ -1,16 +1,17 @@
 import React from "react";
-import { Avatar, Checkbox, Table } from "flowbite-react";
+import { Avatar, Table } from "flowbite-react";
 import { image } from "../../helpers/helper";
 import { FiEdit } from "react-icons/fi";
 import { FcFullTrash } from "react-icons/fc";
 import { PiEyeFill } from "react-icons/pi";
+import flag from "../../images/emblem.jpeg";
 
 function PlatformTable({ platforms }) {
   return (
     <Table hoverable className="mt-4">
       <Table.Head>
         <Table.HeadCell className="p-4"></Table.HeadCell>
-        <Table.HeadCell>Platform name</Table.HeadCell>
+        <Table.HeadCell>Name</Table.HeadCell>
         <Table.HeadCell>Description</Table.HeadCell>
         <Table.HeadCell>Emblem</Table.HeadCell>
         <Table.HeadCell>
@@ -23,9 +24,7 @@ function PlatformTable({ platforms }) {
             className="bg-white dark:border-gray-700 dark:bg-gray-800"
             key="empty-row" // Key should be unique for each element
           >
-            <Table.Cell className="p-4">
-              <Checkbox />
-            </Table.Cell>
+            <Table.Cell className="p-4"></Table.Cell>
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
               ----
             </Table.Cell>
@@ -46,15 +45,15 @@ function PlatformTable({ platforms }) {
               className="bg-white dark:border-gray-700 dark:bg-gray-800"
               key={platform.id}
             >
-              <Table.Cell className="p-4">
-                <Checkbox />
-              </Table.Cell>
+              <Table.Cell className="p-4"></Table.Cell>
               <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                 {platform.name}
               </Table.Cell>
               <Table.Cell>{platform.description}</Table.Cell>
               <Table.Cell>
-                <Avatar img={image(platform.emblem)} />{" "}
+                <Avatar
+                  img={platform.emblem != "" ? image(platform.emblem) : flag}
+                />
               </Table.Cell>
               <Table.Cell>
                 <div className="flex">

@@ -13,6 +13,8 @@ import Updates from "./pages/home/Updates";
 import Results from "./pages/home/Results";
 import Users from "./pages/community/Users";
 import Platforms from "./pages/community/Platforms";
+import CommunityPolls from "./pages/community/Polls";
+
 
 function App() {
   const location = useLocation();
@@ -35,6 +37,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/users" element={<Users />} />
         <Route path="/platforms" element={<Platforms />} />
+        <Route path="/community/polls" element={<CommunityPolls />} />
       </Routes>
     </React.Fragment>
   );

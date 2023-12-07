@@ -1,9 +1,8 @@
 import React from "react";
 
 import coverImage from "../../images/background.png";
-import { calculateAge, full_name, image } from "../../helpers/helper";
-
-
+import male from "../../images/profile (2).svg";
+import { full_name, image } from "../../helpers/helper";
 
 function UserCard({ user }) {
   return (
@@ -18,7 +17,7 @@ function UserCard({ user }) {
       <div className="mx-auto w-32 h-32 relative -mt-16 border-4 border-white rounded-full overflow-hidden">
         <img
           className="object-cover object-center h-32"
-          src={image(user.photo)}
+          src={user.photo != null ? image(user.photo) : male}
           alt="user image"
         />
       </div>
@@ -30,7 +29,7 @@ function UserCard({ user }) {
       </div>
       <ul className="py-4 mt-2 text-gray-700 flex items-center justify-around">
         <li className="flex flex-col items-center justify-around">
-        <svg
+          <svg
             className="w-4 fill-current text-blue-900"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -39,7 +38,7 @@ function UserCard({ user }) {
           </svg>
           <div className="capitalize">{user.gender}</div>
         </li>
-      
+
         <li className="flex flex-col items-center justify-around">
           <svg
             className="w-4 fill-current text-blue-900"

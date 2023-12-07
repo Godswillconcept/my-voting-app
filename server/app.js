@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 const userRouter = require('./routes/userRoute');
+const pollRouter = require('./routes/pollRoute');
 const platformRouter = require('./routes/platformRoute');
 const app = express();
 const port = 3300;
@@ -17,6 +18,7 @@ app.use(
 );
 
 app.use("/users", userRouter);
+app.use("/polls", pollRouter);
 app.use("/platforms", platformRouter);
 app.get("/", (req, res) => {
   res.json({

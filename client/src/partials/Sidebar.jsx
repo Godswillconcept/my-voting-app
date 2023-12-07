@@ -435,7 +435,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                           <li className="mb-1 last:mb-0">
                             <NavLink
                               end
-                              to="/polls"
+                              to="/community/polls"
                               className={({ isActive }) =>
                                 "block transition duration-150 truncate " +
                                 (isActive
@@ -451,7 +451,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                           <li className="mb-1 last:mb-0">
                             <NavLink
                               end
-                              to="/polls/add"
+                              to="/community/polls/add"
                               className={({ isActive }) =>
                                 "block transition duration-150 truncate " +
                                 (isActive
