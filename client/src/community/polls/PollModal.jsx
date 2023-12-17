@@ -10,18 +10,6 @@ function PollModal({ openModal, onClose }) {
     end_time: "",
   });
 
-  
-
-  // const handlePlatformChange = (platformId) => {
-  //   // Toggle selected platforms
-  //   setPoll((prevPoll) => ({
-  //     ...prevPoll,
-  //     selected_platforms: prevPoll.selected_platforms.includes(platformId)
-  //       ? prevPoll.selected_platforms.filter((id) => id !== platformId)
-  //       : [...prevPoll.selected_platforms, platformId],
-  //   }));
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -48,6 +36,10 @@ function PollModal({ openModal, onClose }) {
     });
     onClose(onClose);
   };
+
+  useEffect(() => {
+    handleSubmit();
+  }, [poll]);
 
   return (
     <div>
@@ -82,28 +74,6 @@ function PollModal({ openModal, onClose }) {
                 rows={4}
               />
             </div>
-            {/* <div>
-              <div className="mb-2 block">
-                <Label htmlFor="platforms" value="Choose Platforms" />
-              </div>
-              <div className="flex flex-wrap">
-                {platforms.map((platform) => (
-                  <div
-                    className="flex items-center gap-2 me-2"
-                    key={platform.id}
-                  >
-                    <Checkbox
-                      id={`platform-${platform.id}`}
-                      checked={poll.selected_platforms.includes(platform.id)}
-                      onChange={() => handlePlatformChange(platform.id)}
-                    />
-                    <Label htmlFor={`platform-${platform.id}`}>
-                      {platform.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div> */}
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="start_time" value="Start Time" />

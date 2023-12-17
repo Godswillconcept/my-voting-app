@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button,} from "flowbite-react";
+import { Button } from "flowbite-react";
 
 import Sidebar from "../../partials/Sidebar";
 import Header from "../../partials/Header";
@@ -16,7 +16,6 @@ function Polls() {
   const [polls, setPolls] = useState([]);
 
   useEffect(() => {
-    // Fetch platforms from the server
     const fetchPolls = async () => {
       try {
         const url = "http://localhost:3300/polls";
@@ -69,7 +68,7 @@ function Polls() {
                 onClose={() => setOpenModal(false)}
               />
             </div>
-       
+
             {/* Poll timeline */}
             <PollTimeline polls={polls} />
           </div>
