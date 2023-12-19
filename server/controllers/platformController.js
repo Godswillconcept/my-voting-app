@@ -76,7 +76,6 @@ const bulkCreatePlatforms = async (req, res) => {
     // Parse Excel data
     const platformsData = parseExcel(filePath);
 
-
     // Log parsed data to check its content
     fs.unlinkSync(filePath);
 
@@ -106,7 +105,6 @@ let updatePlatform = async (req, res) => {
   let fileName;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
     if (req.files) {
       fileName = await uploadFile(req.files.emblem, "./uploads/platforms");
     }
