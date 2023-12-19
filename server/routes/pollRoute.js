@@ -14,7 +14,7 @@ router.get("/", getAllPolls);
 router.get("/:id", getPollById);
 router.post("/poll", createPoll);
 router.put("/:id/update", updatePoll);
-router.delete("/:id", deletePoll);
+router.delete("/:id/delete", deletePoll);
 router.post("/add-platform", addPlatformToPoll);
 router.get("/:id/platforms", getPlatformsByPoll);
 module.exports = router;

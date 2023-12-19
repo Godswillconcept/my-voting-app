@@ -14,5 +14,5 @@ router.get("/:id", getPlatformById);
 router.post("/platform", createPlatform);
 router.post("/bulk-create", bulkCreatePlatforms);
 router.put("/:id/update", updatePlatform);
-router.delete("/:id", deletePlatform);
+router.delete("/:id/delete", deletePlatform);
 module.exports = router;

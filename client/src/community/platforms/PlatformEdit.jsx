@@ -9,7 +9,7 @@ import {
 } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 
-function PlatformEdit({ openEditModal, onClose, id }) {
+function PlatformEdit({ openEditModal, onClose, value }) {
   const [platform, setPlatform] = useState({
     name: "",
     description: "",
@@ -37,9 +37,9 @@ function PlatformEdit({ openEditModal, onClose, id }) {
   useEffect(() => {
     // Fetch platform data when the modal is opened
     if (openEditModal) {
-      fetchPlatform(id);
+      fetchPlatform(value.id);
     }
-  }, [openEditModal, id]);
+  }, [openEditModal, value.id]);
 
   const handleInputChange = (e) => {
     if (e.target.name === "emblem") {
@@ -59,6 +59,7 @@ function PlatformEdit({ openEditModal, onClose, id }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(id);
     console.log("Edited Platform:", editedPlatform);
     const formData = new FormData();
     formData.append("name", editedPlatform.name),

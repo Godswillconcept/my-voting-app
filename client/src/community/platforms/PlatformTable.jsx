@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Avatar, Modal, Table } from "flowbite-react";
+import { Avatar, Table } from "flowbite-react";
 import { image } from "../../helpers/helper";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBin6Fill } from "react-icons/ri";
-import { HiOutlineExclamationCircle } from "react-icons/hi";
 import flag from "../../images/emblem.jpeg";
 import PlatformEdit from "./PlatformEdit";
+import PlatformDelete from "./PlatformDelete";
 
 function PlatformTable({ platforms }) {
   const [openEditModal, setOpenEditModal] = useState(
@@ -15,12 +15,16 @@ function PlatformTable({ platforms }) {
     Array(platforms.length).fill(false)
   );
 
+  const [deleteIndex, setDeleteIndex] = useState(null);
+
   const handleEditClick = (index) => {
     const newOpenEditModal = [...openEditModal];
     newOpenEditModal[index] = true;
     setOpenEditModal(newOpenEditModal);
   };
+
   const handleDeleteClick = (index) => {
+    setDeleteIndex(index);
     const newOpenDeleteModal = [...openDeleteModal];
     newOpenDeleteModal[index] = true;
     setOpenDeleteModal(newOpenDeleteModal);
@@ -31,6 +35,14 @@ function PlatformTable({ platforms }) {
     newOpenEditModal[index] = false;
     setOpenEditModal(newOpenEditModal);
   };
+
+  const handleCloseDeleteModal = (index) => {
+    const newOpenDeleteModal = [...openDeleteModal];
+    newOpenDeleteModal[index] = false;
+    setOpenDeleteModal(newOpenDeleteModal);
+    setDeleteIndex(null);
+  };
+
   return (
     <Table hoverable className="mt-4">
       <Table.Head>
@@ -98,37 +110,15 @@ function PlatformTable({ platforms }) {
                 </Table.Cell>
               </Table.Row>
               <PlatformEdit
-                id={platform.id}
+                value={platform}
                 openEditModal={openEditModal[platform.id]}
                 onClose={() => handleCloseModal(platform.id)}
               />
-              <Modal
-                show={openModal}
-                size="md"
-                onClose={() => setOpenModal(false)}
-                popup
-              >
-                <Modal.Header />
-                <Modal.Body>
-                  <div className="text-center">
-                    <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-                    <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                      Are you sure you want to logout of OneVote?
-                    </h3>
-                    <div className="flex justify-center gap-4">
-                      <Button
-                        color="failure"
-                        onClick={() => setOpenModal(false)}
-                      >
-                        {"Yes, I'm sure"}
-                      </Button>
-                      <Button color="gray" onClick={() => setOpenModal(false)}>
-                        No, cancel
-                      </Button>
-                    </div>
-                  </div>
-                </Modal.Body>
-              </Modal>
+              <PlatformDelete
+                platform={platform}
+                openDeleteModal={openDeleteModal[platform.id]}
+                onClose={() => handleCloseDeleteModal(platform.id)}
+              />
             </React.Fragment>
           ))
         )}

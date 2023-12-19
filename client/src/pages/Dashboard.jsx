@@ -4,10 +4,22 @@ import Sidebar from "../partials/Sidebar";
 import Header from "../partials/Header";
 import WelcomeBanner from "../partials/dashboard/WelcomeBanner";
 
-
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const title = "Good afternoon, Acme Inc. 👋";
+
+  const dt = new Date();
+  const hr = dt.getHours();
+  let title;
+
+  if (hr < 12) {
+    title = "Good Morning Acme Inc. 👋";
+  } else if (hr < 17) {
+    title = "Good Afternoon Acme Inc. 👋";
+  } else {
+    title = "Good Evening Acme Inc. 👋";
+  }
+
+  
   const content = "Here is what’s happening with your projects today:";
   return (
     <div className="flex h-screen overflow-hidden">

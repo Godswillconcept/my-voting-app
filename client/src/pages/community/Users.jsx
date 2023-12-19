@@ -31,7 +31,17 @@ function Users() {
     fetchUsers();
   }, []);
 
-  const title = "All Users 👋";
+  const dt = new Date();
+  const hr = dt.getHours();
+  let title;
+
+  if (hr < 12) {
+    title = "Good Morning Acme Inc. 👋";
+  } else if (hr < 17) {
+    title = "Good Afternoon Acme Inc. 👋";
+  } else {
+    title = "Good Evening Acme Inc. 👋";
+  }
   const content = "Here is the list of all registered users";
   return (
     <div className="flex h-screen overflow-hidden">

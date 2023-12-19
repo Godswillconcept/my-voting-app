@@ -14,5 +14,5 @@ router.get("/:id", getCandidateById);
 router.post("/candidate", createCandidate);
 router.post("/bulk-create", bulkCreateCandidates);
 router.put("/:id/update", updateCandidate);
-router.delete("/:id", deleteCandidate);
+router.delete("/:id/delete", deleteCandidate);
 module.exports = router;
