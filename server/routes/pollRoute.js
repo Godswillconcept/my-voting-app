@@ -6,7 +6,9 @@ const {
   updatePoll,
   deletePoll,
   addPlatformToPoll,
-  getPlatformsByPoll,
+  pollDetail,
+  platformsByPoll,
+  candidatesByPoll,
 } = require("../controllers/pollController");
 const router = express.Router();
 
@@ -16,5 +18,7 @@ router.post("/poll", createPoll);
 router.put("/:id/update", updatePoll);
 router.delete("/:id/delete", deletePoll);
 router.post("/add-platform", addPlatformToPoll);
-router.get("/:id/platforms", getPlatformsByPoll);
+router.get("/:id/detail", pollDetail);
+router.get("/:id/platforms", platformsByPoll);
+router.get("/:id/candidates", candidatesByPoll);
 module.exports = router;

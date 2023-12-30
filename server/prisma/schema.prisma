@@ -9,6 +9,7 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id         Int      @id @default(autoincrement())
   first_name String   @db.VarChar(255)
@@ -20,10 +21,12 @@ model User {
   photo      String?  @db.VarChar(255)
   password   String
   phone      String   @unique
+  role       Role
+  remember_me String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  Vote       Vote[]
-  Review     Review[]
+  votes      Vote[]
+  reviews    Review[]
 }
 
 enum Gender {
@@ -31,28 +34,34 @@ enum Gender {
   Female
 }
 
+enum Role {
+  Voter
+  Admin
+}
+
 model Platform {
-  id             Int            @id @default(autoincrement())
-  name           String         @db.VarChar(255)
-  description    String         @db.Text // Change the data type to Text
-  emblem         String         @db.VarChar(255)
-  created_at     DateTime       @default(now())
-  updated_at     DateTime       @updatedAt
-  poll_platforms PollPlatform[] // Change the relation to use the new PollPlatform model
-  Poll           Poll[]
-  Candidate      Candidate[]
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(255)
+  description   String         @db.Text
+  emblem        String?        @db.VarChar(255)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  pollPlatforms PollPlatform[]
+  polls         Poll[]
+  candidates    Candidate[]
 }
 
 model Poll {
-  id             Int            @id @default(autoincrement())
-  name           String         @db.VarChar(255)
-  description    String?        @db.Text
-  start_time     DateTime
-  end_time       DateTime
-  poll_platforms PollPlatform[] // Change the relation to use the new PollPlatform model
-  Platform       Platform[]     // Change the relation to use the new Platform model
-  Vote           Vote[]
-  Review         Review[]
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(255)
+  description   String?        @db.Text
+  start_time    DateTime
+  end_time      DateTime
+  pollPlatforms PollPlatform[]
+  platforms     Platform[]
+  candidates    Candidate[]
+  votes         Vote[]
+  reviews       Review[]
 }
 
 model PollPlatform {
@@ -61,6 +70,21 @@ model PollPlatform {
   platform_id Int
   poll        Poll     @relation(fields: [poll_id], references: [id])
   poll_id     Int
+}
+
+model Candidate {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(255)
+  bio            String?   @db.Text
+  platform       Platform? @relation(fields: [platform_id], references: [id])
+  platform_id    Int?
+  poll           Poll      @relation(fields: [poll_id], references: [id])
+  poll_id        Int
+  photo          String?   @db.VarChar(255)
+  is_independent Boolean   @default(false) // Indicates whether the candidate is independent or not
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  votes          Vote[]
 }
 
 model Vote {
@@ -75,17 +99,6 @@ model Vote {
   updated_at   DateTime  @updatedAt
 }
 
-model Candidate {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  bio         String?  @db.Text
-  platform    Platform @relation(fields: [platform_id], references: [id])
-  platform_id Int
-  photo       String?  @db.VarChar(255)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  Vote        Vote[]
-}
 model Review {
   id         Int      @id @default(autoincrement())
   comment    String?  @db.Text

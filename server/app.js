@@ -1,9 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+
 const fileUpload = require("express-fileupload");
-const userRouter = require('./routes/userRoute');
-const pollRouter = require('./routes/pollRoute');
-const platformRouter = require('./routes/platformRoute');
+const candidateRouter = require("./routes/candidateRoute");
+const userRouter = require("./routes/userRoute");
+const pollRouter = require("./routes/pollRoute");
+const platformRouter = require("./routes/platformRoute");
 const app = express();
 const port = 3300;
 
@@ -17,9 +21,21 @@ app.use(
   })
 );
 
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(cookieParser());
+
 app.use("/users", userRouter);
+app.use("/candidates", candidateRouter);
 app.use("/polls", pollRouter);
 app.use("/platforms", platformRouter);
+
 app.get("/", (req, res) => {
   res.json({
     message: "Testing...",

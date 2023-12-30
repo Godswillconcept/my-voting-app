@@ -84,7 +84,7 @@ const bulkCreatePlatforms = async (req, res) => {
     for (const platform of platformsData) {
       try {
         const createdPlatform = await prisma.platform.create({
-          data: { ...platform, emblem: "" },
+          data: { ...platform },
         });
         createdPlatforms.push(createdPlatform);
       } catch (error) {
@@ -116,7 +116,7 @@ let updatePlatform = async (req, res) => {
       data: {
         name,
         description,
-        emblem: `platforms/${fileName}`,
+        emblem: !req.files ? null : `platforms/${fileName}`,
       },
     });
     res.json({ status: "success", data: updatedPlatform });

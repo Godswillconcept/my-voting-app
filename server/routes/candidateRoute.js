@@ -5,14 +5,12 @@ const {
   createCandidate,
   updateCandidate,
   deleteCandidate,
-  bulkCreateCandidates,
 } = require("../controllers/candidateController");
 const router = express.Router();
 
 router.get("/", getAllCandidates);
 router.get("/:id", getCandidateById);
 router.post("/candidate", createCandidate);
-router.post("/bulk-create", bulkCreateCandidates);
 router.put("/:id/update", updateCandidate);
 router.delete("/:id/delete", deleteCandidate);
 module.exports = router;

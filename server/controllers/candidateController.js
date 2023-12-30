@@ -3,14 +3,21 @@ const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
 const { unlink } = require("fs/promises");
 const fs = require("fs");
-const {
-  uploadFile,
-  parseExcel,
-} = require("../helpers/helper");
+const { uploadFile, parseExcel } = require("../helpers/helper");
 
 let getAllCandidates = async (req, res) => {
   try {
-    const candidates = await prisma.candidate.findMany();
+    const candidates = await prisma.candidate.findMany({
+      include: {
+        platform: {
+          select: {
+            name: true,
+            description: true,
+            emblem: true,
+          },
+        },
+      },
+    });
     res.json({ status: "success", data: candidates });
   } catch (error) {
     res.json({ status: "failed", error: "Error retrieving candidates" });
@@ -36,7 +43,7 @@ let getCandidateById = async (req, res) => {
 };
 
 const createCandidate = async (req, res) => {
-  const { name, bio, platform_id } = req.body;
+  const { name, bio, platform_id, poll_id, isIndependent } = req.body; // Added 'isIndependent' to the destructuring assignment
   let fileName;
 
   try {
@@ -48,10 +55,13 @@ const createCandidate = async (req, res) => {
       data: {
         name,
         bio,
-        platform_id,
+        platform_id: platform_id !== "null" ? parseInt(platform_id) : null, // Changed '!=' to '!=='
+        poll_id: parseInt(poll_id),
+        is_independent: isIndependent !== "undefined" ? true : false, // Changed '!=' to '!=='
         photo: !req.files ? null : `candidates/${fileName}`,
       },
     });
+
     res.json({ status: "success", data: candidate });
     console.log("Candidate created successfully");
   } catch (error) {
@@ -61,48 +71,6 @@ const createCandidate = async (req, res) => {
 
     console.error(error);
     res.json({ status: "failed", error: "Error creating candidate" });
-  }
-};
-
-const bulkCreateCandidates = async (req, res) => {
-  try {
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send("No files were uploaded.");
-    }
-
-    const excelFile = req.files.file;
-    const uploadPath = "./uploads/excels"; // Set your desired upload path
-
-    // Save the file temporarily
-    const filePath = `${uploadPath}/${excelFile.name}`;
-    await excelFile.mv(filePath);
-
-    // Parse Excel data
-    const candidatesData = parseExcel(filePath);
-
-    // Log parsed data to check its content
-    fs.unlinkSync(filePath);
-
-    // Check for existing phone numbers in the database
-    const createdCandidates = [];
-    for (const candidate of candidatesData) {
-      try {
-        const createdCandidate = await prisma.candidate.create({
-          data: {...candidate, photo: null},
-        });
-        createdCandidates.push(createdCandidate);
-      } catch (error) {
-        console.error(
-          `Error creating candidate :`,
-          error
-        );
-      }
-    }
-
-    res.send("Candidates uploaded successfully.");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -123,7 +91,9 @@ let updateCandidate = async (req, res) => {
       data: {
         name,
         bio,
-        platform_id,
+        platform_id: platform_id !== "null" ? parseInt(platform_id) : null, // Changed '!=' to '!=='
+        poll_id: parseInt(poll_id),
+        is_independent: isIndependent !== "undefined" ? true : false, // Changed '!=' to '!=='
         photo: !req.files ? null : `candidates/${fileName}`,
       },
     });
@@ -157,7 +127,6 @@ module.exports = {
   getAllCandidates,
   getCandidateById,
   createCandidate,
-  bulkCreateCandidates,
   updateCandidate,
   deleteCandidate,
 };

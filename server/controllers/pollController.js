@@ -84,20 +84,20 @@ let deletePoll = async (req, res) => {
   }
 };
 
-let addPlatformToPoll = async (req, res) => {
+const addPlatformToPoll = async (req, res) => {
   try {
     const { platform_ids, poll_id } = req.body;
     const pollPlatforms = [];
 
     for (const platform_id of platform_ids) {
       try {
-        let pollPlatform = await prisma.pollPlatform.create({
+        const pollPlatform = await prisma.pollPlatform.create({
           data: { platform_id, poll_id },
         });
         pollPlatforms.push(pollPlatform);
       } catch (error) {
         console.error("Error adding platform to poll:", error);
-        return res.json({
+        return res.status(500).json({
           status: "failed",
           error: "Error adding platform to poll",
         });
@@ -105,7 +105,10 @@ let addPlatformToPoll = async (req, res) => {
     }
 
     console.log(pollPlatforms);
-    return res.send("Platforms added to poll successfully.");
+    return res.json({
+      status: "success",
+      data: "Platforms added to poll successfully.",
+    });
   } catch (error) {
     console.error("Error in addPlatformToPoll:", error);
     return res
@@ -114,7 +117,44 @@ let addPlatformToPoll = async (req, res) => {
   }
 };
 
-let getPlatformsByPoll = async (req, res) => {
+let pollDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let platformsByPoll = await prisma.pollPlatform.findMany({
+      where: {
+        poll_id: parseInt(id),
+      },
+      select: {
+        platform_id: true,
+        // Use "include" to perform a join with the Platform table
+        platform: {
+          select: {
+            name: true,
+            description: true,
+            emblem: true,
+          },
+        },
+      },
+    });
+    const poll = await prisma.poll.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    if (poll) {
+      res.json({
+        status: "success",
+        data: { ...poll, platform_details: platformsByPoll },
+      });
+    } else {
+      res.json({ status: "warning", data: "Poll not found" });
+    }
+  } catch (error) {
+    res.json({ status: "failed", data: "Error retrieving poll" });
+  }
+};
+
+let platformsByPoll = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -134,18 +174,46 @@ let getPlatformsByPoll = async (req, res) => {
         },
       },
     });
-    if (platformsByPoll) {
-      res.json({ status: "success", data: platformsByPoll });
-    } else {
-      res.json({ status: "warning", data: "Platform not found" });
-    }
+
+    res.json({ status: "success", data: platformsByPoll });
   } catch (error) {
-    res.json({
-      status: "failed",
-      data: "Error retrieving platforms for a poll",
-    });
+    res.json({ status: "failed", data: error });
   }
 };
+
+let candidatesByPoll = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const candidatesByPoll = await prisma.candidate.findMany({
+      where: {
+        AND: [
+          { poll_id: parseInt(id) },
+          {
+            OR: [
+              { platform_id: { not: null } },
+              { platform_id: null },
+            ],
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        photo: true,
+        is_independent: true,
+        platform_id: true,
+        platform: true,
+        poll: true,
+      },
+    });
+
+    res.json({ status: "success", data: candidatesByPoll });
+  } catch (error) {
+    res.json({ status: "error", data: error });
+  }
+};
+
 
 module.exports = {
   getAllPolls,
@@ -154,5 +222,7 @@ module.exports = {
   updatePoll,
   deletePoll,
   addPlatformToPoll,
-  getPlatformsByPoll,
+  pollDetail,
+  platformsByPoll,
+  candidatesByPoll,
 };
