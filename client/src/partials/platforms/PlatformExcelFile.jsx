@@ -2,7 +2,7 @@ import { Button, FileInput, Label, Modal } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function PlatformExcelFile({ openModal, onClose }) {
+function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
   const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
@@ -19,6 +19,9 @@ function PlatformExcelFile({ openModal, onClose }) {
     try {
       const url = "http://localhost:3300/platforms/bulk-create";
       const response = await axios.post(url, formData);
+      if (response.data.status === "success") {
+        fetchPlatforms();
+      }
     } catch (error) {
       console.log({ status: "failed", data: error });
     }

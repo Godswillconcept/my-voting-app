@@ -1,8 +1,10 @@
 import { Button, FileInput, Label, Modal } from "flowbite-react";
 import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
-function UserModal({ openModal, onClose }) {
+function UserModal({ openModal, onClose, fetchUsers }) {
   const [user, setUser] = useState({
     first_name: "",
     last_name: "",
@@ -55,6 +57,15 @@ function UserModal({ openModal, onClose }) {
             "Content-Type": "multipart/form-data", // Set the content type for FormData
           },
         });
+        if (response.data.status === "success") {
+          fetchUsers();
+          const notify = () => {
+            toast.success("User created successfully", {
+              position: toast.POSITION.TOP_CENTER,
+            });
+          };
+          notify();
+        }
       } catch (error) {
         console.log({ status: "failed", data: error });
       }
@@ -83,6 +94,7 @@ function UserModal({ openModal, onClose }) {
       <Modal.Header>Create a user</Modal.Header>
       <Modal.Body>
         <form encType="multipart/form-data">
+          <ToastContainer />
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
             <div className="w-full">
               <label

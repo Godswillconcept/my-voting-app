@@ -14,17 +14,17 @@ function Candidates() {
   const [openModal, setOpenModal] = useState(false);
   const [candidates, setCandidates] = useState([]);
 
-  useEffect(() => {
-    async function fetchCandidates() {
-      try {
-        const url = "http://localhost:3300/candidates";
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setCandidates(data);
-      } catch (error) {
-        console.error("Error fetching candidates:", error);
-      }
+  async function fetchCandidates() {
+    try {
+      const url = "http://localhost:3300/candidates";
+      const response = await axios.get(url);
+      const { data } = response.data;
+      setCandidates(data);
+    } catch (error) {
+      console.error("Error fetching candidates:", error);
     }
+  }
+  useEffect(() => {
     fetchCandidates();
   }, []);
 
@@ -62,10 +62,18 @@ function Candidates() {
               <Datepicker />
               {/* Add view button */}
 
-              <Button onClick={() => setOpenModal(true)} color="transparent" className="bg-blue-500 text-white"> Add Candidate</Button>
+              <Button
+                onClick={() => setOpenModal(true)}
+                color="transparent"
+                className="bg-blue-500 text-white"
+              >
+                {" "}
+                Add Candidate
+              </Button>
               <CandidateModal
                 openModal={openModal}
                 onClose={() => setOpenModal(false)}
+                fetchCandidates={fetchCandidates}
               />
             </div>
 

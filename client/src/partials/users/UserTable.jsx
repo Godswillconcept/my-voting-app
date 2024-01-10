@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Pagination, Table } from "flowbite-react";
-import male from "../../images/profile (2).svg";
+import male from "../../images/members/member1.png";
+import female from "../../images/members/member2.png";
 import { full_name, image } from "../../helpers/helper";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBin6Fill } from "react-icons/ri";
@@ -20,7 +21,6 @@ function UserTable({ users }) {
   }, [users, pageSize]);
 
   const onPageChange = (page) => setCurrentPage(page);
-
 
   const handleEditClick = (clickedUser) => {
     setOpenEditModal(true);
@@ -82,7 +82,13 @@ function UserTable({ users }) {
                     <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                       <img
                         className="rounded-full h-10"
-                        src={user.photo != null ? image(user.photo) : male}
+                        src={
+                          user.photo != null
+                            ? image(user.photo)
+                            : user.gender == "Male"
+                            ? male
+                            : female
+                        }
                         alt="user image"
                       />
                     </Table.Cell>

@@ -49,12 +49,12 @@ function generateRandomToken(length = 32) {
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const token = req.headers["x-access-token"];
 
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Forbidden" });
+    if (err) return res.status(403).json({ auth: false, message: "Forbidden" });
 
     req.user = user;
     next();

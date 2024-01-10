@@ -6,25 +6,30 @@ function AddPlatform({ openModal, onClose, poll }) {
   const [platforms, setPlatforms] = useState([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
 
-  useEffect(() => {
-    // Fetch platforms when the component mounts
-    const fetchPlatforms = async () => {
-      try {
-        const url = "http://localhost:3300/platforms";
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setPlatforms(data);
-      } catch (error) {
-        console.error("Error fetching platforms:", error.message);
-      }
-    };
+  const fetchPlatforms = async () => {
+    try {
+      const url = "http://localhost:3300/platforms";
+      const response = await axios.get(url);
+      const { data } = response.data;
+      setPlatforms(data);
+    } catch (error) {
+      console.error("Error fetching platforms:", error.message);
+    }
+  };
 
-    fetchPlatforms();
-    () => selectedPlatforms([]);
-  }, []); // Empty dependency array ensures the effect runs only once on mount
+  const fetchSelectedPlatforms = async () => {
+    try {
+      const url = `http://localhost:3300/polls/${poll.id}/platforms`;
+      const response = await axios.get(url);
+      const { data } = response.data;
+      const initialSelectedPlatforms = data.map((platform) => platform.platform_id);
+      setSelectedPlatforms(initialSelectedPlatforms);
+    } catch (error) {
+      console.error("Error fetching selected platforms for poll:", error.message);
+    }
+  };
 
   const handlePlatformChange = (platformId) => {
-    // Toggle the selected platform
     setSelectedPlatforms((prevSelected) =>
       prevSelected.includes(platformId)
         ? prevSelected.filter((id) => id !== platformId)
@@ -36,26 +41,28 @@ function AddPlatform({ openModal, onClose, poll }) {
     console.log(selectedPlatforms);
     console.log(poll.name);
     try {
-      // Simulate an asynchronous API call
       const url = "http://localhost:3300/polls/add-platform";
       const response = await axios.post(url, {
         platform_ids: selectedPlatforms,
         poll_id: poll.id,
       });
 
-      // Handle the response or throw an error if needed
       if (!response.data.success) {
         throw new Error("Failed to add platforms to poll");
       }
 
-      // Close the modal after submission
       setSelectedPlatforms([]);
-      onClose(onClose);
+      onClose();
     } catch (error) {
       console.log(error);
-      // Handle error (e.g., show an error message to the user)
     }
   };
+
+  useEffect(() => {
+    fetchPlatforms();
+    fetchSelectedPlatforms();
+    return () => setSelectedPlatforms([]);
+  }, [poll.id]);
 
   return (
     <Modal show={openModal} onClose={onClose}>

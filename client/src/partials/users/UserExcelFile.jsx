@@ -1,8 +1,10 @@
 import { Button, FileInput, Label, Modal } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-function UserExcelFile({ openModal, onClose }) {
+function UserExcelFile({ openModal, onClose, fetchUsers }) {
   const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
@@ -19,6 +21,15 @@ function UserExcelFile({ openModal, onClose }) {
     try {
       const url = "http://localhost:3300/users/bulk-create";
       const response = await axios.post(url, formData);
+      if (response.data.status === "success") {
+        fetchUsers();
+        const notify = () => {
+          toast.success("Users created from excel", {
+            position: toast.POSITION.TOP_CENTER,
+          });
+        };
+        notify();
+      }
     } catch (error) {
       console.log({ status: "failed", data: error });
     }
@@ -32,6 +43,7 @@ function UserExcelFile({ openModal, onClose }) {
     <Modal show={openModal} onClose={onClose}>
       <Modal.Header>Create Bulk Users with xls file</Modal.Header>
       <Modal.Body>
+      <ToastContainer />
         <form className="space-y-6">
           <div id="fileUpload" className="max-w-full">
             <div className="mb-2 block">

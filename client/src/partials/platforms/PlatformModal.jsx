@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, FileInput, Label, Modal, TextInput } from "flowbite-react";
 import axios from "axios";
 
-const PlatformModal = ({ openModal, onClose }) => {
+const PlatformModal = ({ openModal, onClose, fetchPlatforms }) => {
   const [platform, setPlatform] = useState({
     name: "",
     description: "",
@@ -26,7 +26,6 @@ const PlatformModal = ({ openModal, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(platform);
     const formData = new FormData();
     formData.append("name", platform.name);
     formData.append("description", platform.description);
@@ -41,6 +40,9 @@ const PlatformModal = ({ openModal, onClose }) => {
           "Content-Type": "multipart/form-data", // Set the content type for FormData
         },
       });
+      if (response.data.status === "success") {
+        fetchPlatforms();
+      }
     } catch (error) {
       console.log({ status: "failed", data: error });
     }
@@ -106,7 +108,7 @@ const PlatformModal = ({ openModal, onClose }) => {
         </form>
       </Modal.Body>
       <Modal.Footer>
-      <Button onClick={handleSubmit}>Submit</Button>
+        <Button onClick={handleSubmit}>Submit</Button>
         <Button
           color="transparent"
           className="bg-red-500 text-white hover:bg-red-800"

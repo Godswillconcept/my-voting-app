@@ -11,7 +11,7 @@ import {
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function CandidateModal({ openModal, onClose }) {
+function CandidateModal({ openModal, onClose, fetchCandidates }) {
   const [platforms, setPlatforms] = useState([]);
   const [polls, setPolls] = useState([]);
   const [isIndependent, setIsIndependent] = useState(false);
@@ -88,6 +88,9 @@ function CandidateModal({ openModal, onClose }) {
           "Content-Type": "multipart/form-data", // Set the content type for FormData
         },
       });
+      if (response.data.status === "success") {
+        fetchCandidates();
+      }
     } catch (error) {
       console.log({ status: "failed", data: error });
     }
@@ -178,12 +181,12 @@ function CandidateModal({ openModal, onClose }) {
               {platforms.length === 0 ? (
                 <option value="null">---</option>
               ) : (
-                platforms.map((platform) => (
+                platforms.map((v) => (
                   <option
-                    key={platform.platform_id}
-                    value={platform.platform_id}
+                    key={v.platform_id}
+                    value={v.platform_id}
                   >
-                    {platform.platform.name}
+                    {v.platform.name}
                   </option>
                 ))
               )}

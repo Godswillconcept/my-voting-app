@@ -16,17 +16,17 @@ function Users() {
   const [openUserExcelModal, setOpenUserExcelModal] = useState(false);
   const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const url = "http://localhost:3300/users";
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
+  const fetchUsers = async () => {
+    try {
+      const url = "http://localhost:3300/users";
+      const response = await axios.get(url);
+      const { data } = response.data;
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
     }
+  };
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -73,13 +73,16 @@ function Users() {
                   Upload Excel File
                 </Dropdown.Item>
               </Dropdown>
+
               <UserModal
                 openModal={openModal}
                 onClose={() => setOpenModal(false)}
+                fetchUsers={fetchUsers}
               />
               <UserExcelFile
                 openModal={openUserExcelModal}
                 onClose={() => setOpenUserExcelModal(false)}
+                fetchUsers={fetchUsers}
               />
             </div>
 

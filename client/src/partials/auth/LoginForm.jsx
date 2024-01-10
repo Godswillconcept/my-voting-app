@@ -1,39 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Button, Checkbox, Label, TextInput } from "flowbite-react";
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../AuthAPI";
 import { useAuth } from "../../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function LoginForm() {
   const { loginAuth } = useAuth();
   const navigate = useNavigate();
 
   // Use the useAuth hook to access the context
+  const [loginStatus, setLoginStatus] = useState(false);
   const [user, setUser] = useState({
     email: "",
     password: "",
-    remember_me: false,
   });
 
   const handleChange = (e) => {
-    if (e.target.name === "photo") {
-      setUser({
-        ...user,
-        photo: e.target.files[0], // Store the file itself, not the filename
-      });
-    } else if (e.target.name === "remember_me") {
-      setUser((prevState) => ({
-        ...prevState,
-        remember_me: e.target.checked,
-      }));
-    } else {
-      const { name, value } = e.target;
-      setUser((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
+    const { name, value } = e.target;
+    setUser((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -41,17 +31,37 @@ function LoginForm() {
     const formData = new FormData();
     formData.append("email", user.email); // Add the email field if it's needed
     formData.append("password", user.password);
-    formData.append("remember_me", user.remember_me);
 
     const result = await login(formData);
-    loginAuth(result.data);
+    const { data, auth, token } = result;
+    if (!auth) {
+      setLoginStatus(false);
+    } else {
+      setLoginStatus(true);
+      localStorage.setItem("auth-token", token);
+      loginAuth(data);
+      userAuthenticated();
+    }
     navigate("/");
 
     setUser({
       email: "",
       password: "",
-      remember_me: false,
     });
+  };
+
+  const userAuthenticated = async () => {
+    const url = "http://localhost:3300/users/authUser";
+    const response = await axios.post(url, {
+      headers: { "x-access-token": localStorage.getItem("auth-token") },
+    });
+    const { data } = response.data;
+    const notify = () => {
+      toast.success(data, {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    };
+    notify();
   };
 
   return (
@@ -65,6 +75,7 @@ function LoginForm() {
         </div>
       </div>
       <div className="flex items-center justify-center mx-auto">
+        <ToastContainer />
         <form encType="multipart/form-data" className="space-y-3">
           <h2 className="text-4xl font-bold dark:text-white my-4">
             Login to Continue
@@ -97,15 +108,6 @@ function LoginForm() {
               onChange={handleChange}
               required
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="remember_me"
-              name="remember_me"
-              checked={user.remember_me}
-              onChange={handleChange}
-            />
-            <Label htmlFor="remember_me">Remember me</Label>
           </div>
 
           <Button

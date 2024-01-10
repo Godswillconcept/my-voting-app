@@ -12,21 +12,19 @@ let getAllPolls = async (req, res) => {
   }
 };
 
-let getPollById = async (req, res) => {
-  const { id } = req.params;
+let latestPollsByCount = async (req, res) => {
   try {
-    const poll = await prisma.poll.findUnique({
-      where: {
-        id: parseInt(id),
+    let { count = 5 } = req.body;
+    const polls = await prisma.poll.findMany({
+      take: Number(count),
+      orderBy: {
+        id: "desc",
       },
     });
-    if (poll) {
-      res.json({ status: "success", data: poll });
-    } else {
-      res.json({ status: "warning", data: "Poll not found" });
-    }
+    res.json({ status: "success", data: polls });
   } catch (error) {
-    res.json({ status: "failed", data: "Error retrieving poll" });
+    console.error("Error retrieving polls:", error);
+    res.status(500).json({ status: "failed", error: "Error retrieving polls" });
   }
 };
 
@@ -89,18 +87,38 @@ const addPlatformToPoll = async (req, res) => {
     const { platform_ids, poll_id } = req.body;
     const pollPlatforms = [];
 
+    // Check if the platform is already associated with the poll
+    const existingPlatforms = await prisma.pollPlatform.findMany({
+      where: {
+        poll_id: parseInt(poll_id),
+        platform_id: {
+          in: platform_ids.map((id) => parseInt(id)),
+        },
+      },
+    });
+
+    const existingPlatformIds = existingPlatforms.map(
+      (platform) => platform.platform_id
+    );
+
     for (const platform_id of platform_ids) {
-      try {
-        const pollPlatform = await prisma.pollPlatform.create({
-          data: { platform_id, poll_id },
-        });
-        pollPlatforms.push(pollPlatform);
-      } catch (error) {
-        console.error("Error adding platform to poll:", error);
-        return res.status(500).json({
-          status: "failed",
-          error: "Error adding platform to poll",
-        });
+      // Check if the platform is not already associated with the poll
+      if (!existingPlatformIds.includes(parseInt(platform_id))) {
+        try {
+          const pollPlatform = await prisma.pollPlatform.create({
+            data: {
+              platform_id: parseInt(platform_id),
+              poll_id: parseInt(poll_id),
+            },
+          });
+          pollPlatforms.push(pollPlatform);
+        } catch (error) {
+          console.error("Error adding platform to poll:", error);
+          return res.status(500).json({
+            status: "failed",
+            error: "Error adding platform to poll",
+          });
+        }
       }
     }
 
@@ -189,10 +207,7 @@ let candidatesByPoll = async (req, res) => {
         AND: [
           { poll_id: parseInt(id) },
           {
-            OR: [
-              { platform_id: { not: null } },
-              { platform_id: null },
-            ],
+            OR: [{ platform_id: { not: null } }, { platform_id: null }],
           },
         ],
       },
@@ -214,10 +229,9 @@ let candidatesByPoll = async (req, res) => {
   }
 };
 
-
 module.exports = {
   getAllPolls,
-  getPollById,
+  latestPollsByCount,
   createPoll,
   updatePoll,
   deletePoll,

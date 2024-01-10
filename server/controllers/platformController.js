@@ -14,12 +14,49 @@ let getAllPlatforms = async (req, res) => {
   }
 };
 
-let getPlatformById = async (req, res) => {
+let latestPlatformsByCount = async (req, res) => {
+  try {
+    const { count = 10 } = req.body;
+    const platforms = await prisma.platform.findMany({
+      take: Number(count),
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+    res.json({ status: "success", data: platforms });
+  } catch (error) {
+    res.json({ status: "failed", error: "Error retrieving platforms" });
+  }
+};
+
+let platformDetail = async (req, res) => {
   const { id } = req.params;
   try {
     const platform = await prisma.platform.findUnique({
       where: {
         id: parseInt(id),
+      },
+      select: {
+        name: true,
+        description: true,
+        emblem: true,
+        pollPlatforms: {
+          select: {
+            poll: {
+              select: {
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+        candidates: {
+          select: {
+            name: true,
+            bio: true,
+            photo: true,
+          },
+        },
       },
     });
     if (platform) {
@@ -147,7 +184,8 @@ let deletePlatform = async (req, res) => {
 
 module.exports = {
   getAllPlatforms,
-  getPlatformById,
+  latestPlatformsByCount,
+  platformDetail,
   createPlatform,
   updatePlatform,
   deletePlatform,

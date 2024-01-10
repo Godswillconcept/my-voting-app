@@ -22,7 +22,6 @@ model User {
   password   String
   phone      String   @unique
   role       Role
-  remember_me String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   votes      Vote[]

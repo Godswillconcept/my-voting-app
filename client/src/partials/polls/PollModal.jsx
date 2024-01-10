@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function PollModal({ openModal, onClose }) {
+function PollModal({ openModal, onClose, fetchPolls }) {
   const [poll, setPoll] = useState({
     name: "",
     description: "",
@@ -34,6 +34,9 @@ function PollModal({ openModal, onClose }) {
     try {
       const url = "http://localhost:3300/polls/poll";
       const response = await axios.post(url, formData);
+      if (response.data.status === "success") {
+        fetchPolls();
+      }
     } catch (error) {
       console.log({ status: "failed", data: error });
     }

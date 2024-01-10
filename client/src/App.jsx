@@ -14,7 +14,7 @@ import Candidates from "./pages/Candidates";
 import Platforms from "./pages/Platforms";
 import Polls from "./pages/Polls";
 import PollDetail from "./partials/polls/PollDetail";
-import { AuthProvider } from "./context/AuthContext";
+import { Spinner } from "flowbite-react";
 
 function App() {
   const location = useLocation();
@@ -34,11 +34,35 @@ function App() {
   if (loading) {
     return (
       <div className="flex items-center justify-center mx-auto h-screen">
-        Loading...
+        <div className="flex flex-wrap gap-2">
+          <Spinner size="xl" color="info" aria-label="Info spinner example" />
+          <Spinner
+            size="xl"
+            color="success"
+            aria-label="Success spinner example"
+          />
+          <Spinner
+            size="xl"
+            color="failure"
+            aria-label="Failure spinner example"
+          />
+          <Spinner
+            size="xl"
+            color="warning"
+            aria-label="Warning spinner example"
+          />
+          <Spinner size="xl" color="pink" aria-label="Pink spinner example" />
+          <Spinner
+            size="xl"
+            color="purple"
+            aria-label="Purple spinner example"
+          />
+        </div>
       </div>
     );
   }
 
+  const notify = () => toast("Wow so easy!");
   return (
     <React.Fragment>
       <Routes>

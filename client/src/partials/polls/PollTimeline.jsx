@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Button, Timeline } from "flowbite-react";
-import { HiArrowNarrowRight, HiCalendar } from "react-icons/hi";
+import { HiCalendar } from "react-icons/hi";
+import { FaLandmarkFlag } from "react-icons/fa6";
+import { RiUserStarFill } from "react-icons/ri";
 import { ImEye } from "react-icons/im";
 import { dateFormat } from "../../helpers/helper";
 import AddPlatform from "./AddPlatform";
+import CandidateModal from "../candidates/CandidateModal";
 import { useNavigate } from "react-router-dom";
 
 function PollTimeline({ polls }) {
@@ -56,18 +59,29 @@ function PollTimeline({ polls }) {
                       color="blue"
                       onClick={() => handleOpenModal(poll.id)}
                     >
-                      Add Platforms to poll
-                      <HiArrowNarrowRight className="ml-2 h-3 w-3" />
+                      Add Platforms
+                      <FaLandmarkFlag size={16} className="ms-3" />
+                    </Button>
+                    <Button
+                      color="warning"
+                      onClick={() => handleOpenModal(poll.id)}
+                    >
+                      Add Candidates
+                      <RiUserStarFill size={16} className="ms-3" />
                     </Button>
                   </div>
-                  <AddPlatform
-                    openModal={openModals[poll.id] || false}
-                    poll={poll}
-                    onClose={() => handleCloseModal(poll.id)}
-                  />
                 </Timeline.Content>
               </Timeline.Item>
             </Timeline>
+            <AddPlatform
+              openModal={openModals[poll.id] || false}
+              poll={poll}
+              onClose={() => handleCloseModal(poll.id)}
+            />
+            <CandidateModal
+              openModal={openModals[poll.id] || false}
+              onClose={() => handleCloseModal(poll.id)}
+            />
           </React.Fragment>
         ))
       )}

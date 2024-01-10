@@ -10,6 +10,7 @@ CREATE TABLE `User` (
     `photo` VARCHAR(255) NULL,
     `password` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NOT NULL,
+    `role` ENUM('Voter', 'Admin') NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -24,7 +25,7 @@ CREATE TABLE `Platform` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `description` TEXT NOT NULL,
-    `emblem` VARCHAR(255) NOT NULL,
+    `emblem` VARCHAR(255) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -52,11 +53,14 @@ CREATE TABLE `PollPlatform` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Vote` (
+CREATE TABLE `Candidate` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `bio` TEXT NULL,
+    `platform_id` INTEGER NULL,
     `poll_id` INTEGER NOT NULL,
-    `candidate_id` INTEGER NOT NULL,
+    `photo` VARCHAR(255) NULL,
+    `is_independent` BOOLEAN NOT NULL DEFAULT false,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -64,12 +68,11 @@ CREATE TABLE `Vote` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Candidate` (
+CREATE TABLE `Vote` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `bio` TEXT NULL,
-    `platform_id` INTEGER NOT NULL,
-    `photo` VARCHAR(255) NULL,
+    `user_id` INTEGER NOT NULL,
+    `poll_id` INTEGER NOT NULL,
+    `candidate_id` INTEGER NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -104,6 +107,12 @@ ALTER TABLE `PollPlatform` ADD CONSTRAINT `PollPlatform_platform_id_fkey` FOREIG
 ALTER TABLE `PollPlatform` ADD CONSTRAINT `PollPlatform_poll_id_fkey` FOREIGN KEY (`poll_id`) REFERENCES `Poll`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Candidate` ADD CONSTRAINT `Candidate_platform_id_fkey` FOREIGN KEY (`platform_id`) REFERENCES `Platform`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Candidate` ADD CONSTRAINT `Candidate_poll_id_fkey` FOREIGN KEY (`poll_id`) REFERENCES `Poll`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Vote` ADD CONSTRAINT `Vote_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -111,9 +120,6 @@ ALTER TABLE `Vote` ADD CONSTRAINT `Vote_poll_id_fkey` FOREIGN KEY (`poll_id`) RE
 
 -- AddForeignKey
 ALTER TABLE `Vote` ADD CONSTRAINT `Vote_candidate_id_fkey` FOREIGN KEY (`candidate_id`) REFERENCES `Candidate`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Candidate` ADD CONSTRAINT `Candidate_platform_id_fkey` FOREIGN KEY (`platform_id`) REFERENCES `Platform`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Review` ADD CONSTRAINT `Review_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

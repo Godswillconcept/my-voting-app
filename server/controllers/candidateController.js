@@ -24,12 +24,44 @@ let getAllCandidates = async (req, res) => {
   }
 };
 
-let getCandidateById = async (req, res) => {
+let latestCandidatesByCount = async (req, res) => {
+  try {
+    const { count = 10 } = req.body;
+    const candidates = await prisma.candidate.findMany({
+      take: Number(count),
+      orderBy: {
+        created_at: "desc",
+      },
+      include: {
+        platform: {
+          select: {
+            name: true,
+            description: true,
+            emblem: true,
+          },
+        },
+      },
+    });
+    res.json({ status: "success", data: candidates });
+  } catch (error) {
+    res.json({ status: "failed", error: "Error retrieving candidates" });
+  }
+};
+
+let candidateDetail = async (req, res) => {
   const { id } = req.params;
   try {
     const candidate = await prisma.candidate.findUnique({
       where: {
         id: parseInt(id),
+      },
+      select: {
+        name: true,
+        bio: true,
+        platform: true,
+        poll: true,
+        photo: true,
+        is_independent: true,
       },
     });
     if (candidate) {
@@ -125,7 +157,8 @@ let deleteCandidate = async (req, res) => {
 
 module.exports = {
   getAllCandidates,
-  getCandidateById,
+  latestCandidatesByCount,
+  candidateDetail,
   createCandidate,
   updateCandidate,
   deleteCandidate,

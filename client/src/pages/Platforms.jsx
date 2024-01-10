@@ -17,17 +17,17 @@ function Platforms() {
 
   const [platforms, setPlatforms] = useState([]);
 
+  const fetchPlatforms = async () => {
+    try {
+      const url = "http://localhost:3300/platforms";
+      const response = await axios.get(url);
+      const { data } = response.data;
+      setPlatforms(data);
+    } catch (error) {
+      console.error("Error fetching platforms:", error);
+    }
+  };
   useEffect(() => {
-    const fetchPlatforms = async () => {
-      try {
-        const url = "http://localhost:3300/platforms";
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setPlatforms(data);
-      } catch (error) {
-        console.error("Error fetching platforms:", error);
-      }
-    };
     fetchPlatforms();
   }, []);
 
@@ -78,10 +78,12 @@ function Platforms() {
               <PlatformModal
                 openModal={openModal}
                 onClose={() => setOpenModal(false)}
+                fetchPlatforms={fetchPlatforms}
               />
               <PlatformExcelFile
                 openModal={openPlatformExcelModal}
                 onClose={() => setOpenPlatformExcelModal(false)}
+                fetchPlatforms={fetchPlatforms}
               />
             </div>
 

@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 
 function DropdownProfile({ align }) {
   const { auth } = useAuth();
-  console.log(auth);
+
   const navigate = useNavigate();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -15,18 +15,17 @@ function Polls() {
   const [openModal, setOpenModal] = useState(false);
   const [polls, setPolls] = useState([]);
 
+  const fetchPolls = async () => {
+    try {
+      const url = "http://localhost:3300/polls";
+      const response = await axios.get(url);
+      const { data } = response.data;
+      setPolls(data);
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    }
+  };
   useEffect(() => {
-    const fetchPolls = async () => {
-      try {
-        const url = "http://localhost:3300/polls";
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setPolls(data);
-      } catch (error) {
-        console.error("Error fetching polls:", error);
-      }
-    };
-
     fetchPolls();
   }, []);
 
@@ -76,6 +75,7 @@ function Polls() {
               <PollModal
                 openModal={openModal}
                 onClose={() => setOpenModal(false)}
+                fetchPolls={fetchPolls}
               />
             </div>
 
