@@ -1,13 +1,13 @@
-import { Button, Modal } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import React from "react";
-import axios from "axios";
 import { full_name } from "../../helpers/helper";
+import axios from "axios";
 
-function UserDelete({ onClose, value }) {
+function UserDelete({ onClose, value,  }) {
   const handleDeleteUser = async (userId) => {
     try {
-      const url = `http://localhost:3300/users/${userId}/delete`;
+      const url = `/users/${userId}/delete`;
       const response = await axios.delete(url);
       const { data } = response.data;
     } catch (error) {

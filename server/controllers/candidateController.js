@@ -75,7 +75,7 @@ let candidateDetail = async (req, res) => {
 };
 
 const createCandidate = async (req, res) => {
-  const { name, bio, platform_id, poll_id, isIndependent } = req.body; // Added 'isIndependent' to the destructuring assignment
+  const { name, bio, platform_id, poll_id, isIndependent } = req.body; 
   let fileName;
 
   try {
@@ -87,9 +87,9 @@ const createCandidate = async (req, res) => {
       data: {
         name,
         bio,
-        platform_id: platform_id !== "null" ? parseInt(platform_id) : null, // Changed '!=' to '!=='
+        platform_id: platform_id !== "null" ? parseInt(platform_id) : null, 
         poll_id: parseInt(poll_id),
-        is_independent: isIndependent !== "undefined" ? true : false, // Changed '!=' to '!=='
+        is_independent: isIndependent !== "undefined" ? true : false, 
         photo: !req.files ? null : `candidates/${fileName}`,
       },
     });

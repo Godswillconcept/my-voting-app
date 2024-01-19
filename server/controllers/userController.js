@@ -218,56 +218,48 @@ let deleteUser = async (req, res) => {
 };
 
 // Login user and generate token
-let loginUser = async (req, res) => {
+async function loginUser(req, res) {
   const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
 
+  const passwordMatch = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatch) {
+    return res.status(401).json({ error: "Invalid password" });
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  res.json({ token });
+}
+
+async function userDetail(req, res) {
   try {
-    const userInfo = await prisma.user.findUnique({
-      where: {
-        email,
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        photo: true,
+        username: true,
+        role: true,
       },
     });
 
-    if (userInfo) {
-      const hashedPassword = userInfo.password;
-      const passwordMatch = bcrypt.compareSync(password, hashedPassword);
-      const user = userInfo;
-
-      if (passwordMatch) {
-        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-          expiresIn: 300,
-        });
-
-        console.log("Password match!");
-        res.json({
-          status: "success",
-          data: user,
-          auth: true,
-          token: token,
-        });
-      } else {
-        console.log("Passwords do not match!");
-        res
-          .status(401)
-          .json({ status: "error", data: "Invalid password", auth: false });
-      }
-    } else {
-      console.log("User not found!");
-      res
-        .status(404)
-        .json({ status: "error", data: "User not found", auth: false });
-    }
+    res.json({ status: "success", data: user });
   } catch (error) {
-    console.error("Error finding user:", error);
-    res
-      .status(500)
-      .json({ status: "failed", error: "Error finding user", auth: false });
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-};
-
-let isAuthenticated = (req, res) => {
-  res.json({ data: "You are logged in" });
-};
+}
 
 // Logout user and clear token
 const logoutUser = async (req, res) => {
@@ -286,5 +278,5 @@ module.exports = {
   loginUser,
   logoutUser,
   latestUsersByCount,
-  isAuthenticated,
+  userDetail,
 };

@@ -134,7 +134,11 @@ function CandidateTable({ candidates }) {
       <Modal show={openEditModal} onClose={() => setOpenEditModal(false)}>
         <Modal.Header>Edit Candidate</Modal.Header>
         <Modal.Body>
-          <CandidateEdit value={candidate} onClose={() => setOpenEditModal(false)} />
+          <CandidateEdit
+            value={candidate}
+            onClose={() => setOpenEditModal(false)}
+            
+          />
         </Modal.Body>
       </Modal>
       <Modal
@@ -145,7 +149,11 @@ function CandidateTable({ candidates }) {
       >
         <Modal.Header />
         <Modal.Body>
-          <CandidateDelete value={candidate} onClose={() => setOpenDeleteModal(false)} />
+          <CandidateDelete
+            value={candidate}
+            onClose={() => setOpenDeleteModal(false)}
+            
+          />
         </Modal.Body>
       </Modal>
     </React.Fragment>

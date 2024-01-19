@@ -126,7 +126,10 @@ function PlatformTable({ platforms }) {
       <Modal show={openEditModal} onClose={() => setOpenEditModal(false)}>
         <Modal.Header>Edit Platform</Modal.Header>
         <Modal.Body>
-          <PlatformEdit value={platform} onClose={() => setOpenEditModal(false)} />
+          <PlatformEdit
+            value={platform}
+            onClose={() => setOpenEditModal(false)}
+          />
         </Modal.Body>
       </Modal>
       <Modal
@@ -137,7 +140,10 @@ function PlatformTable({ platforms }) {
       >
         <Modal.Header />
         <Modal.Body>
-          <PlatformDelete value={platform} onClose={() => setOpenDeleteModal(false)} />
+          <PlatformDelete
+            value={platform}
+            onClose={() => setOpenDeleteModal(false)}
+          />
         </Modal.Body>
       </Modal>
     </React.Fragment>

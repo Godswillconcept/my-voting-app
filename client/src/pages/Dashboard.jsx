@@ -10,7 +10,7 @@ import DashboardItem from "../partials/dashboard/DashboardItem";
 import DashboardUsers from "../partials/dashboard/DashboardUsers";
 import PollStatistics from "../partials/dashboard/PollStatistics";
 
-function Dashboard() {
+function Dashboard({user}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const dt = new Date();
@@ -34,7 +34,7 @@ function Dashboard() {
       {/* Content area */}
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         {/*  Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}  user={user}/>
 
         <main>
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">

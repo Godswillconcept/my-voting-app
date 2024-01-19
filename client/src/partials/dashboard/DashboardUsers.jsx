@@ -11,7 +11,6 @@ function DashboardUsers() {
   async function fetchUsers() {
     const result = await getUsers();
     setUsers(result);
-    console.log(result);
   }
   useEffect(() => {
     fetchUsers();
@@ -52,7 +51,7 @@ function DashboardUsers() {
                           user.photo !== null
                             ? image(user.photo)
                             : user.gender === "Male"
-                            ? member  
+                            ? member
                             : member2
                         }
                         className="rounded-full w-12"

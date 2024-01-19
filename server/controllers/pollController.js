@@ -138,31 +138,38 @@ const addPlatformToPoll = async (req, res) => {
 let pollDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    let platformsByPoll = await prisma.pollPlatform.findMany({
-      where: {
-        poll_id: parseInt(id),
-      },
-      select: {
-        platform_id: true,
-        // Use "include" to perform a join with the Platform table
-        platform: {
-          select: {
-            name: true,
-            description: true,
-            emblem: true,
-          },
-        },
-      },
-    });
     const poll = await prisma.poll.findUnique({
       where: {
         id: parseInt(id),
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        start_time: true,
+        end_time: true,
+        candidates: {
+          select: {
+            id: true,
+            name: true,
+            bio: true,
+            photo: true,
+            platform: true,
+          },
+        },
+        pollPlatforms: {
+          select: {
+            platform: true,
+          },
+        },
       },
     });
     if (poll) {
       res.json({
         status: "success",
-        data: { ...poll, platform_details: platformsByPoll },
+        data: {
+          ...poll,
+        },
       });
     } else {
       res.json({ status: "warning", data: "Poll not found" });

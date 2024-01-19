@@ -18,8 +18,7 @@ function Users() {
 
   const fetchUsers = async () => {
     try {
-      const url = "http://localhost:3300/users";
-      const response = await axios.get(url);
+      const response = await axios.get("/users");
       const { data } = response.data;
       setUsers(data);
     } catch (error) {

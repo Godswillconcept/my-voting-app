@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Modal, Label, Checkbox, Button } from "flowbite-react";
 import axios from "axios";
 
-function AddPlatform({ openModal, onClose, poll }) {
+function AddPlatform({ openModal, onClose, poll}) {
   const [platforms, setPlatforms] = useState([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
 
   const fetchPlatforms = async () => {
     try {
-      const url = "http://localhost:3300/platforms";
+      const url = "/platforms";
       const response = await axios.get(url);
       const { data } = response.data;
       setPlatforms(data);
@@ -19,7 +19,7 @@ function AddPlatform({ openModal, onClose, poll }) {
 
   const fetchSelectedPlatforms = async () => {
     try {
-      const url = `http://localhost:3300/polls/${poll.id}/platforms`;
+      const url = `/polls/${poll.id}/platforms`;
       const response = await axios.get(url);
       const { data } = response.data;
       const initialSelectedPlatforms = data.map((platform) => platform.platform_id);
@@ -41,7 +41,7 @@ function AddPlatform({ openModal, onClose, poll }) {
     console.log(selectedPlatforms);
     console.log(poll.name);
     try {
-      const url = "http://localhost:3300/polls/add-platform";
+      const url = "/polls/add-platform";
       const response = await axios.post(url, {
         platform_ids: selectedPlatforms,
         poll_id: poll.id,

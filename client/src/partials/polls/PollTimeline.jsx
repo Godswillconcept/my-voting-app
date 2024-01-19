@@ -43,7 +43,7 @@ function PollTimeline({ polls }) {
               <Timeline.Item>
                 <Timeline.Point icon={HiCalendar} />
                 <Timeline.Content>
-                  <Timeline.Time>{dateFormat(poll.start_time)}</Timeline.Time>
+                  <Timeline.Time>{dateFormat(poll.start_time)} - {dateFormat(poll.end_time)}</Timeline.Time>
                   <Timeline.Title>{poll.name}</Timeline.Title>
                   <Timeline.Body>{poll.description}</Timeline.Body>
                   <div className="flex space-x-2">
@@ -77,10 +77,12 @@ function PollTimeline({ polls }) {
               openModal={openModals[poll.id] || false}
               poll={poll}
               onClose={() => handleCloseModal(poll.id)}
+            
             />
             <CandidateModal
               openModal={openModals[poll.id] || false}
               onClose={() => handleCloseModal(poll.id)}
+            
             />
           </React.Fragment>
         ))

@@ -1,15 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import Transition from "../utils/Transition";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import member from "../images/members/member1.png";
+import member2 from "../images/members/member2.png";
 import UserAvatar from "../images/user-avatar-32.png";
 import { full_name, image } from "../helpers/helper";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
 
-function DropdownProfile({ align }) {
-  const { auth } = useAuth();
-
+function DropdownProfile({ align, user }) {
   const navigate = useNavigate();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -17,18 +16,23 @@ function DropdownProfile({ align }) {
   const trigger = useRef(null);
   const dropdown = useRef(null);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      const url = "http://localhost:3300/users/logout";
-      const response = await axios.post(url);
-      const { data } = response.data;
-      console.log({ status: "success", data: data });
-
+      localStorage.removeItem("token");
       navigate("/login");
+      const notify = () => {
+        toast.success(
+          "You can log in back to continue",
+
+          {
+            position: toast.POSITION.TOP_CENTER,
+          }
+        );
+      };
+      notify();
     } catch (error) {
       console.log(error);
     }
-    setDropdownOpen(!dropdownOpen);
   };
 
   // close on click outside
@@ -59,7 +63,8 @@ function DropdownProfile({ align }) {
 
   return (
     <React.Fragment>
-      {Object.keys(auth).length != 0 ? (
+      <ToastContainer />
+      {user !== null ? (
         <div className="relative inline-flex">
           <button
             ref={trigger}
@@ -70,14 +75,20 @@ function DropdownProfile({ align }) {
           >
             <img
               className="w-8 h-8 rounded-full"
-              src={image(auth.photo)}
+              src={
+                user.photo !== null
+                  ? image(user.photo)
+                  : user.gender === "Male"
+                  ? member
+                  : member2
+              }
               width="32"
               height="32"
               alt="User"
             />
             <div className="flex items-center truncate">
               <span className="truncate ml-2 text-sm font-medium dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-slate-200">
-                {full_name(auth.first_name, auth.last_name)}
+                {full_name(user.first_name, user.last_name)}
               </span>
               <svg
                 className="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400"
@@ -108,29 +119,19 @@ function DropdownProfile({ align }) {
               <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200 dark:border-slate-700">
                 <div className="font-medium text-slate-800 dark:text-slate-100">
                   {" "}
-                  {full_name(auth.first_name, auth.last_name)}
+                  {full_name(user.first_name, user.last_name)}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 italic">
-                  Administrator
+                  {user.role}
                 </div>
               </div>
               <ul>
-                <li>
-                  <Link
-                    className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                    to="/profile"
-                  >
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                    to="/logout"
-                    onClick={handleLogout}
-                  >
-                    Log Out
-                  </Link>
+                <li
+                  onClick={handleLogout}
+                  className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
+                  to="/logout"
+                >
+                  Log Out
                 </li>
               </ul>
             </div>
@@ -192,14 +193,12 @@ function DropdownProfile({ align }) {
                 </div>
               </div>
               <ul>
-                <li>
-                  <Link
-                    className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                    to="/logout"
-                    onClick={handleLogout}
-                  >
-                    Log Out
-                  </Link>
+                <li
+                  onClick={handleLogout}
+                  className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
+                  to="/logout"
+                >
+                  Log Out
                 </li>
               </ul>
             </div>

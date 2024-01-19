@@ -19,8 +19,7 @@ function Platforms() {
 
   const fetchPlatforms = async () => {
     try {
-      const url = "http://localhost:3300/platforms";
-      const response = await axios.get(url);
+      const response = await axios.get("/platforms");
       const { data } = response.data;
       setPlatforms(data);
     } catch (error) {

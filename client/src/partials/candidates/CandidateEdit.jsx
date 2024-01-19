@@ -17,7 +17,7 @@ function CandidateEdit({ onClose, value }) {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const url = "http://localhost:3300/platforms";
+        const url = "/platforms";
         const response = await axios.get(url);
         const { data } = response.data;
 
@@ -54,7 +54,7 @@ function CandidateEdit({ onClose, value }) {
     formData.append("photo", candidate.photo); // Append the file here
 
     try {
-      const url = `http://localhost:3300/candidates/${value.id}/update`;
+      const url = `/candidates/${value.id}/update`;
       const response = await axios.put(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the content type for FormData

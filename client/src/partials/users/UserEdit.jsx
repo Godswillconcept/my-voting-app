@@ -3,10 +3,8 @@ import {
   Button,
   FileInput,
   Label,
-  Modal,
   Select,
   TextInput,
-  Textarea,
 } from "flowbite-react";
 import React, { useState } from "react";
 
@@ -43,7 +41,7 @@ function UserEdit({ onClose, value }) {
     formData.append("photo", user.photo); // Append the file here
 
     try {
-      const url = `http://localhost:3300/users/${value.id}/update`;
+      const url = `users/${value.id}/update`;
       const response = await axios.put(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the content type for FormData

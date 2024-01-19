@@ -9,7 +9,6 @@ function DashboardPoll() {
   const [polls, setPolls] = useState([]);
   async function fetchPolls() {
     let result = await getPolls();
-    console.log(result);
     setPolls(result);
   }
 

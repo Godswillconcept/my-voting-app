@@ -3,10 +3,11 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 import React from "react";
 import axios from "axios";
 
-function PlatformDelete({onClose, value }) {
+function PlatformDelete({ onClose, value }) {
+
   const handleDeletePlatform = async (platformId) => {
     try {
-      const url = `http://localhost:3300/platforms/${platformId}/delete`;
+      const url = `/platforms/${platformId}/delete`;
       const response = await axios.delete(url);
     } catch (error) {
       console.log({ status: "failed", data: error });
@@ -14,6 +15,8 @@ function PlatformDelete({onClose, value }) {
     // After deletion, close the delete modal
     onClose();
   };
+
+  
   return (
     <div>
       <div className="text-center">

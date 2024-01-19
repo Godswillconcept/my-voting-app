@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, FileInput, Label, Modal, TextInput } from "flowbite-react";
 import axios from "axios";
 
+
 const PlatformModal = ({ openModal, onClose, fetchPlatforms }) => {
   const [platform, setPlatform] = useState({
     name: "",
@@ -34,7 +35,7 @@ const PlatformModal = ({ openModal, onClose, fetchPlatforms }) => {
     // sending the information to the database
 
     try {
-      const url = "http://localhost:3300/platforms/platform";
+      const url = "/platforms/platform";
       const response = await axios.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the content type for FormData
@@ -54,6 +55,8 @@ const PlatformModal = ({ openModal, onClose, fetchPlatforms }) => {
     });
     onClose(onClose);
   };
+
+  
   return (
     <Modal show={openModal} onClose={onClose}>
       <Modal.Header>Add New Platform</Modal.Header>

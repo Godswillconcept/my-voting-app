@@ -27,7 +27,7 @@ function CandidateModal({ openModal, onClose, fetchCandidates }) {
   useEffect(() => {
     const fetchPolls = async () => {
       try {
-        const url = "http://localhost:3300/polls";
+        const url = "/polls";
         const response = await axios.get(url);
         const { data } = response.data;
         setPolls(data);
@@ -41,7 +41,7 @@ function CandidateModal({ openModal, onClose, fetchCandidates }) {
   useEffect(() => {
     const fetchPlatformByPollId = async (pollId) => {
       try {
-        let url = `http://localhost:3300/polls/${pollId}/platforms`;
+        let url = `/polls/${pollId}/platforms`;
         const response = await axios.get(url);
         const { data } = response.data;
         setPlatforms(data);
@@ -82,7 +82,7 @@ function CandidateModal({ openModal, onClose, fetchCandidates }) {
     formData.append("photo", candidate.photo); // Append the file here
     formData.append("isIndependent", candidate.isIndependent); // Append the file here
     try {
-      const url = "http://localhost:3300/candidates/candidate";
+      const url = "/candidates/candidate";
       const response = await axios.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the content type for FormData

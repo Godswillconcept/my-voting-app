@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
-function UserModal({ openModal, onClose, fetchUsers }) {
+function UserModal({ openModal, onClose, fetchUsers}) {
   const [user, setUser] = useState({
     first_name: "",
     last_name: "",
@@ -51,8 +51,8 @@ function UserModal({ openModal, onClose, fetchUsers }) {
       formData.append("dob", user.dob);
       formData.append("photo", user.photo);
       try {
-        const url = "http://localhost:3300/users/user";
-        const response = await axios.post(url, formData, {
+        // const url = "http://localhost:3300/users/user";
+        const response = await axios.post("/users/user", formData, {
           headers: {
             "Content-Type": "multipart/form-data", // Set the content type for FormData
           },

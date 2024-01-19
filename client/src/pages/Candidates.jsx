@@ -16,7 +16,7 @@ function Candidates() {
 
   async function fetchCandidates() {
     try {
-      const url = "http://localhost:3300/candidates";
+      const url = "/candidates";
       const response = await axios.get(url);
       const { data } = response.data;
       setCandidates(data);

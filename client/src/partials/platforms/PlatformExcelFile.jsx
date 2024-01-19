@@ -17,7 +17,7 @@ function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
 
     // sending information to the database
     try {
-      const url = "http://localhost:3300/platforms/bulk-create";
+      const url = "/platforms/bulk-create";
       const response = await axios.post(url, formData);
       if (response.data.status === "success") {
         fetchPlatforms();

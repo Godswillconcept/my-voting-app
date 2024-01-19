@@ -17,7 +17,7 @@ function Polls() {
 
   const fetchPolls = async () => {
     try {
-      const url = "http://localhost:3300/polls";
+      const url = "/polls";
       const response = await axios.get(url);
       const { data } = response.data;
       setPolls(data);

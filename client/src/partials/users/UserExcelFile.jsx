@@ -19,7 +19,7 @@ function UserExcelFile({ openModal, onClose, fetchUsers }) {
 
     // sending information to the database
     try {
-      const url = "http://localhost:3300/users/bulk-create";
+      const url = "/users/bulk-create";
       const response = await axios.post(url, formData);
       if (response.data.status === "success") {
         fetchUsers();

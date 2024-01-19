@@ -34,37 +34,39 @@ const parseExcel = (filePath) => {
   return data;
 };
 
-function generateRandomToken(length = 32) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let token = "";
+const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"];
 
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    token += characters.charAt(randomIndex);
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  return token;
-}
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ error: "Token expired" });
+      }
+      return res.status(401).json({ error: "Invalid token" });
+    }
 
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-  const token = req.headers["x-access-token"];
-
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ auth: false, message: "Forbidden" });
-
-    req.user = user;
+    req.userId = decoded.userId;
+    req.role = decoded.role;
     next();
   });
 };
 
+
+const isAdmin = (req, res, next) => {
+  if (req.role !== "Admin") {
+    return res.status(403).json({ error: "Permission denied" });
+  }
+
+  next();
+};
 module.exports = {
   uploadFile,
   dateToISOString,
   parseExcel,
-  generateRandomToken,
-  authenticateToken,
+  verifyToken,
+  isAdmin
 };

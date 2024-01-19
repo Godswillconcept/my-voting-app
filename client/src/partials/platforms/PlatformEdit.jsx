@@ -7,7 +7,7 @@ import {
   TextInput,
   Textarea,
 } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 function PlatformEdit({ onClose, value }) {
   const [platform, setPlatform] = useState(value);
@@ -36,7 +36,7 @@ function PlatformEdit({ onClose, value }) {
       formData.append("emblem", platform.emblem);
 
     try {
-      const url = `http://localhost:3300/platforms/${value.id}/update`;
+      const url = `/platforms/${value.id}/update`;
       const response = await axios.put(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Set the content type for FormData

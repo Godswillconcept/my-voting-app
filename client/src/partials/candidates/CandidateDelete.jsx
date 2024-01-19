@@ -7,7 +7,7 @@ function CandidateDelete({ onClose, value }) {
   console.log("value", value);
   const handleDeleteCandidate = async (candidateId) => {
     try {
-      const url = `http://localhost:3300/candidates/${candidateId}/delete`;
+      const url = `/candidates/${candidateId}/delete`;
       const response = await axios.delete(url);
     } catch (error) {
       console.log({ status: "failed", data: error });

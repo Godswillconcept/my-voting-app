@@ -4,7 +4,6 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 
 const fileUpload = require("express-fileupload");
-const clientRoute = require("./routes/clientRoute");
 const adminRoute = require("./routes/adminRoute");
 const app = express();
 const port = 3300;
@@ -28,8 +27,7 @@ app.use(
 );
 
 app.use(cookieParser());
-app.use(clientRoute);
-app.use("/admin", adminRoute);
+app.use(adminRoute);
 
 app.get("/", (req, res) => {
   res.json({
