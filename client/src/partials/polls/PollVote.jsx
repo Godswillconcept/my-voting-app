@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Sidebar from "../Sidebar";
-import Header from "../Header";
 import WelcomeBanner from "../dashboard/WelcomeBanner";
 import VoterCard from "../vote/VoterCard";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function PollVote() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { pollDetail } = location.state;
@@ -72,57 +69,43 @@ function PollVote() {
 
   const content = `Your voice matters, and every vote counts. Cast your vote for the candidate you believe will best represent your interests and values.`;
   return (
-    <div className="flex h-screen overflow-hidden">
-      <ToastContainer />
-      {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <>
+      {/* Welcome banner */}
+      <WelcomeBanner title={title} content={content} />
+      {/* Dashboard actions */}
 
-      {/* Content area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-        {/*  Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        <main>
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-            {/* Welcome banner */}
-            <WelcomeBanner title={title} content={content} />
-            {/* Dashboard actions */}
-
-            <div className="w-full py-8 bg-gray-100">
-              <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h1 className="text-2xl font-bold text-center text-gray-800 mb-1">
-                  {pollDetail.name}
-                </h1>
-                <p className="text-center text-base w-2/3 mx-auto mb-8">
-                  {pollDetail.description}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-                  {pollDetail.candidates.map((candidate, index) => (
-                    <VoterCard
-                      key={index}
-                      candidate={candidate}
-                      handleVoteChange={handleVoteChange}
-                      selectedCandidateId={selectedCandidateId}
-                    />
-                  ))}
-                </div>
-                <div className="mt-8 flex justify-center">
-                  <button
-                    type="button"
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-lg transition duration-300"
-                    onClick={handleSubmit}
-                  >
-                    Submit Vote
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Cards */}
+      <div className="w-full py-8 bg-gray-100">
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <h1 className="text-2xl font-bold text-center text-gray-800 mb-1">
+            {pollDetail.name}
+          </h1>
+          <p className="text-center text-base w-2/3 mx-auto mb-8">
+            {pollDetail.description}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
+            {pollDetail.candidates.map((candidate, index) => (
+              <VoterCard
+                key={index}
+                candidate={candidate}
+                handleVoteChange={handleVoteChange}
+                selectedCandidateId={selectedCandidateId}
+              />
+            ))}
           </div>
-        </main>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 shadow-lg transition duration-300"
+              onClick={handleSubmit}
+            >
+              Submit Vote
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Cards */}
+    </>
   );
 }
 

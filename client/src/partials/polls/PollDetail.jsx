@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from "react";
-
-import Sidebar from "../../partials/Sidebar";
-import Header from "../../partials/Header";
 import WelcomeBanner from "../../partials/dashboard/WelcomeBanner";
 import { calculateCountdown } from "../../helpers/helper";
 import { useParams, useNavigate } from "react-router-dom";
@@ -11,7 +8,6 @@ import CandidateCard from "../candidates/CandidateCard";
 import PlatformCard from "../platforms/PlatformCard";
 
 function PollDetail() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pollDetail, setPollDetail] = useState(null);
   const [countdown, setCountdown] = useState("");
 
@@ -46,96 +42,78 @@ function PollDetail() {
     navigate(`/${pollDetail.id}/vote`, { state: { pollDetail } });
   };
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <>
+      <h2 className="text-2xl font-bold dark:text-white mt-3 mb-8">
+        Poll Information
+      </h2>
+      {/* PollDetail actions */}
 
-      {/* Content area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-        {/*  Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        <main>
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-            <h2 className="text-2xl font-bold dark:text-white mt-3 mb-8">
-              Poll Information
+      {pollDetail && (
+        <div>
+          <WelcomeBanner
+            title={pollDetail.name}
+            content={pollDetail.description}
+          />
+          <div className="bg-yellow-100 p-6 my-12">
+            <h2 className="text-center text-lg font-bold dark:text-primary marker">
+              Countdown to Poll Start
             </h2>
-            {/* PollDetail actions */}
 
-            {pollDetail && (
-              <div>
-                <WelcomeBanner
-                  title={pollDetail.name}
-                  content={pollDetail.description}
-                />
-                <div className="bg-yellow-100 p-6 my-12">
-                  <h2 className="text-center text-lg font-bold dark:text-primary marker">
-                    Countdown to Poll Start
-                  </h2>
+            {/* Check if current time is before start_time */}
+            {new Date() < new Date(pollDetail.start_time) && (
+              <p className="text-4xl font-bold dark:text-red-500 marker text-center">
+                {countdown}
+              </p>
+            )}
 
-                  {/* Check if current time is before start_time */}
-                  {new Date() < new Date(pollDetail.start_time) && (
-                    <p className="text-4xl font-bold dark:text-red-500 marker text-center">
-                      {countdown}
-                    </p>
-                  )}
-
-                  {/* Check if current time is between start_time and end_time */}
-                  {new Date() >= new Date(pollDetail.start_time) &&
-                    new Date() <= new Date(pollDetail.end_time) && (
-                      <div className="flex justify-center item-center my-3">
-                        <Button onClick={() => handleVote(pollDetail)}>
-                          Vote Now!
-                        </Button>
-                      </div>
-                    )}
-
-                  {/* Check if current time is after end_time */}
-                  {new Date() > new Date(pollDetail.end_time) && (
-                    <p className="text-4xl font-bold dark:text-red-500 marker text-center">
-                      Poll has ended
-                    </p>
-                  )}
+            {/* Check if current time is between start_time and end_time */}
+            {new Date() >= new Date(pollDetail.start_time) &&
+              new Date() <= new Date(pollDetail.end_time) && (
+                <div className="flex justify-center item-center my-3">
+                  <Button onClick={() => handleVote(pollDetail)}>
+                    Vote Now!
+                  </Button>
                 </div>
+              )}
 
-                <div className="">
-                  <h2 className="text-2xl font-bold dark:text-white my-3">
-                    Registered Candidates for the poll
-                  </h2>
-
-                  {pollDetail.candidates != null ? (
-                    <div className="grid grid-cols-3 gap-8 mt-5 mb-16">
-                      {pollDetail.candidates.map((candidate, index) => (
-                        <CandidateCard candidate={candidate} key={index} />
-                      ))}
-                    </div>
-                  ) : (
-                    "No Candidate"
-                  )}
-
-                  <h2 className="text-2xl font-bold dark:text-white my-3">
-                    Registered Platforms for the poll
-                  </h2>
-
-                  <div className="grid grid-cols-3 gap-5 mt-5 mb-16">
-                    {pollDetail.pollPlatforms != null
-                      ? pollDetail.pollPlatforms.map(
-                          (platformDetail, index) => (
-                            <PlatformCard
-                              platformDetail={platformDetail}
-                              key={index}
-                            />
-                          )
-                        )
-                      : "No platform added"}
-                  </div>
-                </div>
-              </div>
+            {/* Check if current time is after end_time */}
+            {new Date() > new Date(pollDetail.end_time) && (
+              <p className="text-4xl font-bold dark:text-red-500 marker text-center">
+                Poll has ended
+              </p>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+
+          <div className="">
+            <h2 className="text-2xl font-bold dark:text-white my-3">
+              Registered Candidates for the poll
+            </h2>
+
+            {pollDetail.candidates != null ? (
+              <div className="grid grid-cols-3 gap-8 mt-5 mb-16">
+                {pollDetail.candidates.map((candidate, index) => (
+                  <CandidateCard candidate={candidate} key={index} />
+                ))}
+              </div>
+            ) : (
+              "No Candidate"
+            )}
+
+            <h2 className="text-2xl font-bold dark:text-white my-3">
+              Registered Platforms for the poll
+            </h2>
+
+            <div className="grid grid-cols-3 gap-5 mt-5 mb-16">
+              {pollDetail.pollPlatforms != null
+                ? pollDetail.pollPlatforms.map((platformDetail, index) => (
+                    <PlatformCard platformDetail={platformDetail} key={index} />
+                  ))
+                : "No platform added"}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

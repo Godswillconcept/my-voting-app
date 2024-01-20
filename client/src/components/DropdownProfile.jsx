@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Transition from "../utils/Transition";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import member from "../images/members/member1.png";
-import member2 from "../images/members/member2.png";
+import male from "../images/members/member1.png";
+import female from "../images/members/member2.png";
 import UserAvatar from "../images/user-avatar-32.png";
 import { full_name, image } from "../helpers/helper";
 
@@ -76,11 +76,11 @@ function DropdownProfile({ align, user }) {
             <img
               className="w-8 h-8 rounded-full"
               src={
-                user.photo !== null
+                user.photo != null
                   ? image(user.photo)
-                  : user.gender === "Male"
-                  ? member
-                  : member2
+                  : user.gender == "Male"
+                  ? male
+                  : female
               }
               width="32"
               height="32"
@@ -127,9 +127,14 @@ function DropdownProfile({ align, user }) {
               </div>
               <ul>
                 <li
+                  
+                  className="font-medium text-sm text-gray-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
+                >
+                  Profile
+                </li>
+                <li
                   onClick={handleLogout}
-                  className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                  to="/logout"
+                  className="font-medium text-sm text-gray-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
                 >
                   Log Out
                 </li>
@@ -195,8 +200,7 @@ function DropdownProfile({ align, user }) {
               <ul>
                 <li
                   onClick={handleLogout}
-                  className="font-medium text-sm text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                  to="/logout"
+                  className="font-medium text-sm cursor-pointer text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
                 >
                   Log Out
                 </li>

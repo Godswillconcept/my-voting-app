@@ -7,7 +7,7 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import CandidateDelete from "../candidates/CandidateDelete";
 import CandidateEdit from "../candidates/CandidateEdit";
 
-function CandidateTable({ candidates }) {
+function CandidateTable({ candidates, user }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10); // Set your desired page size here
   const [totalPages, setTotalPages] = useState(1); // Initialize with a default value
@@ -45,10 +45,12 @@ function CandidateTable({ candidates }) {
             <Table.HeadCell>Bio</Table.HeadCell>
             <Table.HeadCell>Platform</Table.HeadCell>
             <Table.HeadCell>Photo</Table.HeadCell>
-            <Table.HeadCell>
-              Actions
-              <span className="sr-only">Actions</span>
-            </Table.HeadCell>
+            {user.role === "Admin" && (
+              <Table.HeadCell>
+                Actions
+                <span className="sr-only">Actions</span>
+              </Table.HeadCell>
+            )}
           </Table.Head>
           <Table.Body className="divide-y">
             {candidates.length === 0 ? (
@@ -59,14 +61,16 @@ function CandidateTable({ candidates }) {
                 <Table.Cell>---</Table.Cell>
                 <Table.Cell>---</Table.Cell>
                 <Table.Cell>---</Table.Cell>
-                <Table.Cell>
-                  <a
-                    href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                  >
-                    Actions
-                  </a>
-                </Table.Cell>
+                {user.role === "Admin" && (
+                  <Table.Cell>
+                    <a
+                      href="#"
+                      className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                    >
+                      Actions
+                    </a>
+                  </Table.Cell>
+                )}
               </Table.Row>
             ) : (
               displayedCandidates.map((candidate) => (
@@ -98,22 +102,24 @@ function CandidateTable({ candidates }) {
                         alt="candidate image"
                       />
                     </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex">
-                        <button
-                          className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
-                          onClick={() => handleEditClick(candidate)}
-                        >
-                          <FiEdit color="blue" />
-                        </button>
-                        <button
-                          className="outline outline-red-600 p-1 hover:bg-red-400 rounded mx-2"
-                          onClick={() => handleDeleteClick(candidate)}
-                        >
-                          <RiDeleteBin6Fill color="red" />
-                        </button>
-                      </div>
-                    </Table.Cell>
+                    {user.role === "Admin" && (
+                      <Table.Cell>
+                        <div className="flex">
+                          <button
+                            className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
+                            onClick={() => handleEditClick(candidate)}
+                          >
+                            <FiEdit color="blue" />
+                          </button>
+                          <button
+                            className="outline outline-red-600 p-1 hover:bg-red-400 rounded mx-2"
+                            onClick={() => handleDeleteClick(candidate)}
+                          >
+                            <RiDeleteBin6Fill color="red" />
+                          </button>
+                        </div>
+                      </Table.Cell>
+                    )}
                   </Table.Row>
                 </React.Fragment>
               ))
@@ -137,7 +143,6 @@ function CandidateTable({ candidates }) {
           <CandidateEdit
             value={candidate}
             onClose={() => setOpenEditModal(false)}
-            
           />
         </Modal.Body>
       </Modal>
@@ -152,7 +157,6 @@ function CandidateTable({ candidates }) {
           <CandidateDelete
             value={candidate}
             onClose={() => setOpenDeleteModal(false)}
-            
           />
         </Modal.Body>
       </Modal>

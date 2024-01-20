@@ -9,7 +9,7 @@ import AddPlatform from "./AddPlatform";
 import CandidateModal from "../candidates/CandidateModal";
 import { useNavigate } from "react-router-dom";
 
-function PollTimeline({ polls }) {
+function PollTimeline({ polls, user }) {
   const navigate = useNavigate();
   const [openModals, setOpenModals] = useState({});
 
@@ -43,7 +43,9 @@ function PollTimeline({ polls }) {
               <Timeline.Item>
                 <Timeline.Point icon={HiCalendar} />
                 <Timeline.Content>
-                  <Timeline.Time>{dateFormat(poll.start_time)} - {dateFormat(poll.end_time)}</Timeline.Time>
+                  <Timeline.Time>
+                    {dateFormat(poll.start_time)} - {dateFormat(poll.end_time)}
+                  </Timeline.Time>
                   <Timeline.Title>{poll.name}</Timeline.Title>
                   <Timeline.Body>{poll.description}</Timeline.Body>
                   <div className="flex space-x-2">
@@ -55,20 +57,24 @@ function PollTimeline({ polls }) {
                       View Detail
                       <ImEye className="ml-2 h-3 w-3" />
                     </Button>
-                    <Button
-                      color="blue"
-                      onClick={() => handleOpenModal(poll.id)}
-                    >
-                      Add Platforms
-                      <FaLandmarkFlag size={16} className="ms-3" />
-                    </Button>
-                    <Button
-                      color="warning"
-                      onClick={() => handleOpenModal(poll.id)}
-                    >
-                      Add Candidates
-                      <RiUserStarFill size={16} className="ms-3" />
-                    </Button>
+                    {user.role === "Admin" && (
+                      <>
+                        <Button
+                          color="blue"
+                          onClick={() => handleOpenModal(poll.id)}
+                        >
+                          Add Platforms
+                          <FaLandmarkFlag size={16} className="ms-3" />
+                        </Button>
+                        <Button
+                          color="warning"
+                          onClick={() => handleOpenModal(poll.id)}
+                        >
+                          Add Candidates
+                          <RiUserStarFill size={16} className="ms-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </Timeline.Content>
               </Timeline.Item>
@@ -77,12 +83,10 @@ function PollTimeline({ polls }) {
               openModal={openModals[poll.id] || false}
               poll={poll}
               onClose={() => handleCloseModal(poll.id)}
-            
             />
             <CandidateModal
               openModal={openModals[poll.id] || false}
               onClose={() => handleCloseModal(poll.id)}
-            
             />
           </React.Fragment>
         ))

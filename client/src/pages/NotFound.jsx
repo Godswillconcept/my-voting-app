@@ -10,7 +10,7 @@ function NotFound() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-200">
+    <div className="flex justify-center items-center h-[500px]">
       <div className="bg-white p-8 rounded-lg shadow-md text-center">
         <h1 className="text-3xl font-semibold text-gray-800 mb-6">404 - Page Not Found</h1>
         <p className="mb-6 text-gray-600">The page you are looking for does not exist or has moved.</p>

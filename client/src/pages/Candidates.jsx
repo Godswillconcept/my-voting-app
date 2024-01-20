@@ -9,7 +9,7 @@ import { Button } from "flowbite-react";
 import CandidateModal from "../partials/candidates/CandidateModal";
 import CandidateTable from "../partials/candidates/CandidateTable";
 
-function Candidates() {
+function Candidates({ user }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [candidates, setCandidates] = useState([]);
@@ -33,57 +33,47 @@ function Candidates() {
   let title;
 
   if (hr < 12) {
-    title = "Good Morning Acme Inc. 👋";
+    title = "Good Morning Champ 👋";
   } else if (hr < 17) {
-    title = "Good Afternoon Acme Inc. 👋";
+    title = "Good Afternoon Champ 👋";
   } else {
-    title = "Good Evening Acme Inc. 👋";
+    title = "Good Evening Champ 👋";
   }
   const content = "Here is the list of all registered candidates";
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <>
+      {/* Inbox banner */}
+      <WelcomeBanner title={title} content={content} />
 
-      {/* Content area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-        {/*  Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        <main>
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-            {/* Inbox banner */}
-            <WelcomeBanner title={title} content={content} />
-
-            <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-              {/* Filter button */}
-              <FilterButton />
-              {/* Datepicker built with flatpickr */}
-              <Datepicker />
-              {/* Add view button */}
-
-              <Button
-                onClick={() => setOpenModal(true)}
-                color="transparent"
-                className="bg-blue-500 text-white"
-              >
-                {" "}
-                Add Candidate
-              </Button>
-              <CandidateModal
-                openModal={openModal}
-                onClose={() => setOpenModal(false)}
-                fetchCandidates={fetchCandidates}
-              />
-            </div>
-
-            <div className="my-5">
-              <CandidateTable candidates={candidates} />
-            </div>
-          </div>
-        </main>
+      <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+        {/* Filter button */}
+        <FilterButton />
+        {/* Datepicker built with flatpickr */}
+        <Datepicker />
+        {/* Add view button */}
+        {user.role ===
+          "Admin" &&
+          (
+            <Button
+              onClick={() => setOpenModal(true)}
+              color="transparent"
+              className="bg-blue-500 text-white"
+            >
+              {" "}
+              Add Candidate
+            </Button>
+          )}
+        <CandidateModal
+          openModal={openModal}
+          onClose={() => setOpenModal(false)}
+          fetchCandidates={fetchCandidates}
+        />
       </div>
-    </div>
+
+      <div className="my-5">
+        <CandidateTable candidates={candidates} user={user}  />
+      </div>
+    </>
   );
 }
 

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { register } from "../AuthAPI";
 
 function Register() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ function Register() {
     photo: "",
   });
   const [passwordError, setPasswordError] = useState("");
+const [error, setError] = useState();
 
   const handleChange = (e) => {
     if (e.target.name === "photo") {
@@ -52,12 +54,20 @@ function Register() {
       formData.append("gender", user.gender);
       formData.append("dob", user.dob);
       formData.append("photo", user.photo);
+      if (!user.email || !user.password) {
+        setError("Email and Password are required!");
+        const notify = () => {
+          toast.error("Email and Password are required!", {
+            position: toast.POSITION.TOP_CENTER,
+          });
+        };
+        notify();
+        return;
+      }
 
       try {
-        const response = await axios.post("http://localhost:3300/users/user", {
-          formData,
-        });
-        const { status } = response.data;
+        const response = await register(formData);
+        const { status } = response;
         if (status === "success") {
           const message = "New User registered successfully!";
           const notify = () => {
@@ -66,7 +76,7 @@ function Register() {
             });
           };
           notify();
-          navigate("/");
+          navigate("/users");
         } else {
           const message = "Something went wrong!";
           const notify = () => {
@@ -297,7 +307,7 @@ function Register() {
           <Button
             color="transparent"
             pill
-            className="bg-primary text-white  px-8 my-4 hover:bg-blue-800"
+            className="bg-primary text-white  px-8 my-4 hover:bg-blue-800" onClick={handleSubmit}
           >
             Register
           </Button>

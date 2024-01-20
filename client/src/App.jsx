@@ -25,6 +25,8 @@ import NotFound from "./pages/NotFound";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { full_name } from "./helpers/helper";
+import { login } from "./AuthAPI";
+import Layout from "./pages/Layout";
 
 function App() {
   const location = useLocation();
@@ -55,9 +57,8 @@ function App() {
         const response = await axios.get("/users/detail");
         const { status, data } = response.data;
         setUser(data);
-        console.log("user", data); 
         if (status === "success") {
-          const loggedinUser = full_name(user.first_name, user.last_name);
+          const loggedinUser = full_name(data.first_name, data.last_name);
           navigate("/");
           const message = `${loggedinUser} logged in successfully`;
           const notify = () => {
@@ -78,7 +79,7 @@ function App() {
     if (token) {
       fetchUserDetails();
     }
-  }, [token, navigate]);
+  }, [token]);
 
   useEffect(() => {
     document.querySelector("html").style.scrollBehavior = "auto";
@@ -90,13 +91,10 @@ function App() {
     setLoading(false);
   }, []);
 
-  const handleLogin = async (email, password) => {
+  const handleLogin = async (formData) => {
     try {
-      const response = await axios.post("/users/login", {
-        email,
-        password,
-      });
-      const { token } = response.data;
+      const response = await login(formData);
+      const { token } = response;
       setToken(token);
       localStorage.setItem("token", token);
       navigate("/");
@@ -105,6 +103,15 @@ function App() {
         "Login failed:",
         error.response ? error.response.data.error : error.message
       );
+      const notify = () => {
+        toast.error(
+          error.response ? error.response.data.error : error.message,
+          {
+            position: toast.POSITION.TOP_CENTER,
+          }
+        );
+      };
+      notify();
     }
   };
 
@@ -153,7 +160,9 @@ function App() {
           index
           element={
             token ? (
-              <Dashboard handleLogout={handleLogout} user={user} />
+              <Layout user={user}>
+                <Dashboard handleLogout={handleLogout} user={user} />
+              </Layout>
             ) : (
               <Navigate to="/login" />
             )
@@ -163,29 +172,84 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route
           path="/users"
-          element={token ? <Users /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <Users user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/platforms"
-          element={token ? <Platforms /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <Platforms user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/candidates"
-          element={token ? <Candidates /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <Candidates user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/polls"
-          element={token ? <Polls /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <Polls user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/:pollId?/detail"
-          element={token ? <PollDetail /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <PollDetail user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/:pollId?/vote"
-          element={token ? <PollVote /> : <Navigate to="/login" />}
+          element={
+            token ? (
+              <Layout user={user}>
+                <PollVote user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
-        <Route path="*" element={<NotFound />} />
+        <Route
+          path="*"
+          element={
+            <Layout user={user}>
+              <NotFound />
+            </Layout>
+          }
+        />
       </Routes>
     </React.Fragment>
   );

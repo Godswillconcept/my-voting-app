@@ -7,7 +7,7 @@ import flag from "../../images/emblem.jpeg";
 import PlatformEdit from "./PlatformEdit";
 import PlatformDelete from "./PlatformDelete";
 
-function PlatformTable({ platforms }) {
+function PlatformTable({ platforms, user }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10); // Set your desired page size here
   const [totalPages, setTotalPages] = useState(1); // Initialize with a default value
@@ -43,10 +43,13 @@ function PlatformTable({ platforms }) {
           <Table.HeadCell>Name</Table.HeadCell>
           <Table.HeadCell>Description</Table.HeadCell>
           <Table.HeadCell>Emblem</Table.HeadCell>
-          <Table.HeadCell>
-            Action
-            <span className="sr-only">Action</span>
-          </Table.HeadCell>
+
+          {user.role === "Admin" && (
+            <Table.HeadCell>
+              Actions
+              <span className="sr-only">Actions</span>
+            </Table.HeadCell>
+          )}
         </Table.Head>
         <Table.Body className="divide-y">
           {platforms.length === 0 ? (
@@ -54,21 +57,22 @@ function PlatformTable({ platforms }) {
               className="bg-white dark:border-gray-700 dark:bg-gray-800"
               key="empty-row" // Key should be unique for each element
             >
-              <Table.Cell className="p-4"></Table.Cell>
               <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                 ----
               </Table.Cell>
               <Table.Cell>---</Table.Cell>
               <Table.Cell>----</Table.Cell>
               <Table.Cell>----</Table.Cell>
-              <Table.Cell>
-                <a
-                  href="#"
-                  className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                >
-                  Edit
-                </a>
-              </Table.Cell>
+              {user.role === "Admin" && (
+                <Table.Cell>
+                  <a
+                    href="#"
+                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                  >
+                    Edit
+                  </a>
+                </Table.Cell>
+              )}
             </Table.Row>
           ) : (
             displayedPlatforms.map((platform) => (
@@ -91,22 +95,24 @@ function PlatformTable({ platforms }) {
                       }
                     />
                   </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex">
-                      <button
-                        className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
-                        onClick={() => handleEditClick(platform)}
-                      >
-                        <FiEdit color="blue" />
-                      </button>
-                      <button
-                        className="outline outline-red-600 p-1 hover:bg-red-400  rounded mx-2"
-                        onClick={() => handleDeleteClick(platform)}
-                      >
-                        <RiDeleteBin6Fill color="red" />
-                      </button>
-                    </div>
-                  </Table.Cell>
+                  {user.role === "Admin" && (
+                    <Table.Cell>
+                      <div className="flex">
+                        <button
+                          className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
+                          onClick={() => handleEditClick(platform)}
+                        >
+                          <FiEdit color="blue" />
+                        </button>
+                        <button
+                          className="outline outline-red-600 p-1 hover:bg-red-400  rounded mx-2"
+                          onClick={() => handleDeleteClick(platform)}
+                        >
+                          <RiDeleteBin6Fill color="red" />
+                        </button>
+                      </div>
+                    </Table.Cell>
+                  )}
                 </Table.Row>
               </React.Fragment>
             ))

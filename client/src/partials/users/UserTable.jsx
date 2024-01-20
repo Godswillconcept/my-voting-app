@@ -8,7 +8,7 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import UserDelete from "./UserDelete";
 import UserEdit from "./UserEdit";
 
-function UserTable({ users }) {
+function UserTable({ users, data }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10); // Set your desired page size here
   const [totalPages, setTotalPages] = useState(0); // Initialize with a default value
@@ -46,11 +46,15 @@ function UserTable({ users }) {
             <Table.HeadCell>Email</Table.HeadCell>
             <Table.HeadCell>Phone Number</Table.HeadCell>
             <Table.HeadCell>Gender</Table.HeadCell>
-            <Table.HeadCell>Role</Table.HeadCell>
-            <Table.HeadCell>
-              Actions
-              <span className="sr-only">Actions</span>
-            </Table.HeadCell>
+            {data.role === "Admin" && (
+              <>
+                <Table.HeadCell>Role</Table.HeadCell>
+                <Table.HeadCell>
+                  Actions
+                  <span className="sr-only">Actions</span>
+                </Table.HeadCell>
+              </>
+            )}
           </Table.Head>
           <Table.Body className="divide-y">
             {users.length === 0 ? (
@@ -62,15 +66,20 @@ function UserTable({ users }) {
                 <Table.Cell>---</Table.Cell>
                 <Table.Cell>---</Table.Cell>
                 <Table.Cell>---</Table.Cell>
-                <Table.Cell>---</Table.Cell>
-                <Table.Cell>
-                  <a
-                    href="#"
-                    className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
-                  >
-                    Actions
-                  </a>
-                </Table.Cell>
+                {data.role === "Admin" && (
+                  <>
+                    <Table.Cell>---</Table.Cell>
+
+                    <Table.Cell>
+                      <a
+                        href="#"
+                        className="font-medium text-cyan-600 hover:underline dark:text-cyan-500"
+                      >
+                        Actions
+                      </a>
+                    </Table.Cell>
+                  </>
+                )}
               </Table.Row>
             ) : (
               displayedUsers.map((user) => (
@@ -98,36 +107,40 @@ function UserTable({ users }) {
                     <Table.Cell>{user.email}</Table.Cell>
                     <Table.Cell>{user.phone}</Table.Cell>
                     <Table.Cell>{user.gender}</Table.Cell>
-                    <Table.Cell>
-                      <div
-                        className={`p-1 text-center text-xs ${
-                          user.role === "Admin"
-                            ? "bg-green-500"
-                            : user.role === "Voter"
-                            ? "bg-red-500"
-                            : ""
-                        } rounded-full text-white`}
-                      >
-                        {user.role}
-                      </div>
-                    </Table.Cell>
+                    {data.role === "Admin" && (
+                      <>
+                        <Table.Cell>
+                          <div
+                            className={`p-1 text-center text-xs ${
+                              user.role === "Admin"
+                                ? "bg-green-500"
+                                : user.role === "Voter"
+                                ? "bg-red-500"
+                                : ""
+                            } rounded-full text-white`}
+                          >
+                            {user.role}
+                          </div>
+                        </Table.Cell>
 
-                    <Table.Cell>
-                      <div className="flex">
-                        <button
-                          className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
-                          onClick={() => handleEditClick(user)}
-                        >
-                          <FiEdit color="blue" />
-                        </button>
-                        <button
-                          className="outline outline-red-600 p-1 hover:bg-red-400 rounded mx-2"
-                          onClick={() => handleDeleteClick(user)}
-                        >
-                          <RiDeleteBin6Fill color="red" />
-                        </button>
-                      </div>
-                    </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex">
+                            <button
+                              className="outline outline-blue-600 p-1 hover:bg-blue-400 rounded mx-2"
+                              onClick={() => handleEditClick(user)}
+                            >
+                              <FiEdit color="blue" />
+                            </button>
+                            <button
+                              className="outline outline-red-600 p-1 hover:bg-red-400 rounded mx-2"
+                              onClick={() => handleDeleteClick(user)}
+                            >
+                              <RiDeleteBin6Fill color="red" />
+                            </button>
+                          </div>
+                        </Table.Cell>
+                      </>
+                    )}
                   </Table.Row>
                 </React.Fragment>
               ))

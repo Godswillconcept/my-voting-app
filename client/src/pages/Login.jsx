@@ -39,8 +39,7 @@ function Login({ onLogin }) {
       const formData = new FormData();
       formData.append("email", user.email);
       formData.append("password", user.password);
-      await onLogin(user.email, user.password);
-
+      await onLogin(formData);
       setError("");
     } catch (error) {
       setError("Invalid email or password");

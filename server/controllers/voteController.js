@@ -40,7 +40,6 @@ const createVote = async (req, res) => {
       },
     });
     res.json({ status: "success", data: vote });
-    console.log("Vote created successfully");
   } catch (error) {
     console.error(error);
     res.json({ status: "failed", error: "Error creating vote" });
