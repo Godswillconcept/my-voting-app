@@ -12,13 +12,46 @@ let getAllPolls = async (req, res) => {
   }
 };
 
-let latestPollsByCount = async (req, res) => {
+let activePolls = async (req, res) => {
   try {
-    let { count = 5 } = req.body;
     const polls = await prisma.poll.findMany({
-      take: Number(count),
+      where: {
+        OR: [
+          {
+            start_time: {
+              gte: new Date(),
+            },
+          },
+          {
+            end_time: {
+              gte: new Date(),
+            },
+          },
+        ],
+      },
       orderBy: {
-        id: "desc",
+        id: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        start_time: true,
+        end_time: true,
+        candidates: {
+          select: {
+            id: true,
+            name: true,
+            bio: true,
+            photo: true,
+            platform: true,
+          },
+        },
+        pollPlatforms: {
+          select: {
+            platform: true,
+          },
+        },
       },
     });
     res.json({ status: "success", data: polls });
@@ -64,7 +97,7 @@ let updatePoll = async (req, res) => {
     res.json({ status: "success", data: updatedPoll });
     console.log("Poll updated successfully");
   } catch (error) {
-    res.json({ staus: "failed", error: "Error updating poll" });
+    res.json({ status: "failed", error: "Error updating poll" });
   }
 };
 
@@ -82,7 +115,7 @@ let deletePoll = async (req, res) => {
   }
 };
 
-const addPlatformToPoll = async (req, res) => {
+const attachPlatform = async (req, res) => {
   try {
     const { platform_ids, poll_id } = req.body;
     const pollPlatforms = [];
@@ -125,10 +158,10 @@ const addPlatformToPoll = async (req, res) => {
     console.log(pollPlatforms);
     return res.json({
       status: "success",
-      data: "Platforms added to poll successfully.",
+      data: pollPlatforms,
     });
   } catch (error) {
-    console.error("Error in addPlatformToPoll:", error);
+    console.error("Error in attaching Platform:", error);
     return res
       .status(500)
       .json({ status: "failed", error: "Internal Server Error" });
@@ -238,11 +271,11 @@ let candidatesByPoll = async (req, res) => {
 
 module.exports = {
   getAllPolls,
-  latestPollsByCount,
+  activePolls,
   createPoll,
   updatePoll,
   deletePoll,
-  addPlatformToPoll,
+  attachPlatform,
   pollDetail,
   platformsByPoll,
   candidatesByPoll,

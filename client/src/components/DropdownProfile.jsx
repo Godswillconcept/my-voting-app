@@ -126,11 +126,13 @@ function DropdownProfile({ align, user }) {
                 </div>
               </div>
               <ul>
-                <li
-                  
-                  className="font-medium text-sm text-gray-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
-                >
-                  Profile
+                <li>
+                  <Link
+                    to="/profile"
+                    className="font-medium text-sm text-gray-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center py-1 px-3"
+                  >
+                    Profile
+                  </Link>
                 </li>
                 <li
                   onClick={handleLogout}

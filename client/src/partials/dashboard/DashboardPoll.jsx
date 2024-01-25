@@ -3,7 +3,7 @@ import { Timeline } from "flowbite-react";
 import { HiCalendar } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import { getPolls } from "./dashboardAPI";
-import { dateFormat, truncateSentenceByWords } from "../../helpers/helper";
+import { dateFormat } from "../../helpers/helper";
 
 function DashboardPoll() {
   const [polls, setPolls] = useState([]);
@@ -18,7 +18,7 @@ function DashboardPoll() {
   return (
     <div className="shadow rounded-xl pb-5 bg-white dark:bg-slate-950 col-span-1">
       <div className="flex justify-between items-center p-4 rounded-t-xl border-b shadow">
-        <h6 className="text-lg font-medium dark:text-white">Upcoming Polls</h6>
+        <h6 className="text-lg font-medium dark:text-white">Active Polls</h6>
         <Link
           to="/polls"
           className="font-medium text-blue-600 dark:text-blue-500 hover:underline"

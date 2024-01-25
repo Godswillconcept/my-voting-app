@@ -61,3 +61,15 @@ export function truncateSentenceByWords(sentence, maxWords) {
     return truncatedSentence;
   }
 }
+
+export const previewExcelFile = (selectedFile) => {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const html = XLSX.utils.sheet_to_html(sheet);
+    document.getElementById("spreadsheet-container").innerHTML = html;
+  };
+  reader.readAsArrayBuffer(selectedFile);
+};

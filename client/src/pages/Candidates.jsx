@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Sidebar from "../partials/Sidebar";
-import Header from "../partials/Header";
 import WelcomeBanner from "../partials/dashboard/WelcomeBanner";
 import FilterButton from "../components/DropdownFilter";
 import Datepicker from "../components/Datepicker";
@@ -10,7 +8,6 @@ import CandidateModal from "../partials/candidates/CandidateModal";
 import CandidateTable from "../partials/candidates/CandidateTable";
 
 function Candidates({ user }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [candidates, setCandidates] = useState([]);
 

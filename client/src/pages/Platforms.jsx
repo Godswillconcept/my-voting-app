@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../partials/Sidebar";
-import Header from "../partials/Header";
 import WelcomeBanner from "../partials/dashboard/WelcomeBanner";
 import FilterButton from "../components/DropdownFilter";
 import Datepicker from "../components/Datepicker";
@@ -11,7 +9,6 @@ import PlatformTable from "../partials/platforms/PlatformTable";
 import PlatformExcelFile from "../partials/platforms/PlatformExcelFile";
 
 function Platforms({user}) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openPlatformExcelModal, setOpenPlatformExcelModal] = useState(false);
 

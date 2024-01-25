@@ -3,12 +3,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { previewExcelFile } from "../../helpers/helper";
 
 function UserExcelFile({ openModal, onClose, fetchUsers }) {
   const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    previewExcelFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -40,10 +42,10 @@ function UserExcelFile({ openModal, onClose, fetchUsers }) {
   };
 
   return (
-    <Modal show={openModal} onClose={onClose}>
+    <Modal show={openModal} onClose={onClose} size="3xl">
       <Modal.Header>Create Bulk Users with xls file</Modal.Header>
       <Modal.Body>
-      <ToastContainer />
+        <ToastContainer />
         <form className="space-y-6">
           <div id="fileUpload" className="max-w-full">
             <div className="mb-2 block">
@@ -57,6 +59,7 @@ function UserExcelFile({ openModal, onClose, fetchUsers }) {
             />
           </div>
         </form>
+        <div id="spreadsheet-container" className="preview-table"></div>
       </Modal.Body>
       <Modal.Footer>
         <Button onClick={handleSubmit}>Submit</Button>

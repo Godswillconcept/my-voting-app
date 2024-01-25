@@ -8,7 +8,6 @@ const {
   updateUser,
   deleteUser,
   loginUser,
-  isAuthenticated,
   logoutUser,
   userDetail,
 } = require("../controllers/userController");
@@ -34,11 +33,11 @@ const {
 
 const {
   getAllPolls,
-  latestPollsByCount,
+  activePolls,
   createPoll,
   updatePoll,
   deletePoll,
-  addPlatformToPoll,
+  attachPlatform,
   pollDetail,
   platformsByPoll,
   candidatesByPoll,
@@ -57,6 +56,9 @@ const {
   getVoteById,
   createVote,
   voteCount,
+  votesPerCandidate,
+  leadingCandidates,
+  totalVotesPerPoll,
 } = require("../controllers/voteController");
 const { verifyToken, isAdmin } = require("../helpers/helper");
 const router = Router();
@@ -97,11 +99,11 @@ router.delete("/candidates/:id/delete", verifyToken, isAdmin, deleteCandidate);
 
 // poll routes
 router.get("/polls", getAllPolls);
-router.post("/polls/count", latestPollsByCount);
+router.get("/polls/active", activePolls);
 router.post("/polls/poll", verifyToken, isAdmin, createPoll);
 router.put("/polls/:id/update", verifyToken, isAdmin, updatePoll);
 router.delete("/polls/:id/delete", verifyToken, isAdmin, deletePoll);
-router.post("/polls/add-platform", verifyToken, isAdmin, addPlatformToPoll);
+router.post("/polls/platform", verifyToken, isAdmin, attachPlatform);
 router.get("/polls/:id/detail", verifyToken, pollDetail);
 router.get("/polls/:id/platforms", verifyToken, platformsByPoll);
 router.get("/polls/:id/candidates", verifyToken, candidatesByPoll);
@@ -117,5 +119,7 @@ router.delete("/reviews/:id/delete", verifyToken, isAdmin, deleteReview);
 router.get("/votes", verifyToken, isAdmin, getAllVotes);
 router.get("/votes/:id", verifyToken, getVoteById);
 router.post("/votes/vote", verifyToken, createVote);
-router.get("/votes/:id/count", voteCount);
+router.get("/votes/count", votesPerCandidate);
+router.get("/votes/candidates", leadingCandidates);
+router.get("", totalVotesPerPoll);
 module.exports = router;

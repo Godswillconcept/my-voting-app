@@ -121,7 +121,10 @@ const bulkCreatePlatforms = async (req, res) => {
     for (const platform of platformsData) {
       try {
         const createdPlatform = await prisma.platform.create({
-          data: { ...platform },
+          data: {
+            ...platform,
+            emblem: null,
+          },
         });
         createdPlatforms.push(createdPlatform);
       } catch (error) {
@@ -129,7 +132,7 @@ const bulkCreatePlatforms = async (req, res) => {
       }
     }
 
-    res.send("Platforms uploaded successfully.");
+    res.json({ status: "success", data: createdPlatforms });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

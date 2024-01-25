@@ -16,6 +16,7 @@ body {
 
 .background {
   background: url('../images/background.png'), lightgray 50% / cover no-repeat;
+  
 }
 
 header {
@@ -58,3 +59,46 @@ header {
   background-attachment: fixed;
   background-size: cover;
 }
+
+#spreadsheet-container {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.preview-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.preview-table th,
+.preview-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.preview-table th {
+  background-color: #1a74af;
+  /* Dark blue */
+  color: #fff;
+}
+
+.preview-table tr:first-child {
+  background-color: #3498db;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+
+
+.preview-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* 
+.preview-table tr:hover {
+  background-color: #f2f2f2;
+  cursor: pointer;
+} */

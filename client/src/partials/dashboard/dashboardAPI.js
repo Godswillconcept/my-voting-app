@@ -15,8 +15,8 @@ export const getUsers = async () => {
 
 export const getPolls = async () => {
   try {
-    const url = `${baseUrl}/polls/count`;
-    const response = await axios.post(url);
+    const url = `${baseUrl}/polls/active`;
+    const response = await axios.get(url);
     const { data } = response.data;
     return data;
   } catch (error) {

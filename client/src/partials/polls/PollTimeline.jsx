@@ -1,31 +1,30 @@
 import React, { useState } from "react";
-import { Button, Timeline } from "flowbite-react";
+import { Button, Modal, Timeline } from "flowbite-react";
 import { HiCalendar } from "react-icons/hi";
 import { FaLandmarkFlag } from "react-icons/fa6";
 import { RiUserStarFill } from "react-icons/ri";
 import { ImEye } from "react-icons/im";
 import { dateFormat } from "../../helpers/helper";
-import AddPlatform from "./AddPlatform";
-import CandidateModal from "../candidates/CandidateModal";
+import AttachPlatform from "./AttachPlatform";
 import { useNavigate } from "react-router-dom";
+import AttachCandidate from "./AttachCandidate";
 
 function PollTimeline({ polls, user }) {
   const navigate = useNavigate();
-  const [openModals, setOpenModals] = useState({});
+  const [poll, setPoll] = useState({});
+  const [openPlatformModal, setOpenPlatformModal] = useState(false);
+  const [openCandidateModal, setOpenCandidateModal] = useState(false);
 
-  const handleOpenModal = (pollId) => {
-    setOpenModals((prevModals) => ({
-      ...prevModals,
-      [pollId]: true,
-    }));
+  const handlePlatformClick = (clickedPoll) => {
+    setOpenPlatformModal(true);
+    setPoll(clickedPoll);
   };
 
-  const handleCloseModal = (pollId) => {
-    setOpenModals((prevModals) => ({
-      ...prevModals,
-      [pollId]: false,
-    }));
+  const handleCandidateClick = (clickedPoll) => {
+    setOpenCandidateModal(true);
+    setPoll(clickedPoll);
   };
+
 
   const handleViewDetail = (pollId) => {
     navigate(`/${pollId}/detail`);
@@ -61,14 +60,14 @@ function PollTimeline({ polls, user }) {
                       <>
                         <Button
                           color="blue"
-                          onClick={() => handleOpenModal(poll.id)}
+                          onClick={() => handlePlatformClick(poll)}
                         >
                           Add Platforms
                           <FaLandmarkFlag size={16} className="ms-3" />
                         </Button>
                         <Button
                           color="warning"
-                          onClick={() => handleOpenModal(poll.id)}
+                          onClick={() => handleCandidateClick(poll)}
                         >
                           Add Candidates
                           <RiUserStarFill size={16} className="ms-3" />
@@ -79,18 +78,33 @@ function PollTimeline({ polls, user }) {
                 </Timeline.Content>
               </Timeline.Item>
             </Timeline>
-            <AddPlatform
-              openModal={openModals[poll.id] || false}
-              poll={poll}
-              onClose={() => handleCloseModal(poll.id)}
-            />
-            <CandidateModal
-              openModal={openModals[poll.id] || false}
-              onClose={() => handleCloseModal(poll.id)}
-            />
           </React.Fragment>
         ))
       )}
+      <Modal
+        show={openPlatformModal}
+        onClose={() => setOpenPlatformModal(false)}
+      >
+        <Modal.Header>Attach Platform(s) to {poll.name}</Modal.Header>
+        <Modal.Body>
+          <AttachPlatform
+            poll={poll}
+            onClose={() => setOpenPlatformModal(false)}
+          />
+        </Modal.Body>
+      </Modal>
+      <Modal
+        show={openCandidateModal}
+        onClose={() => setOpenCandidateModal(false)}
+      >
+        <Modal.Header>Attach Candidate to {poll.name}</Modal.Header>
+        <Modal.Body>
+          <AttachCandidate
+            poll={poll}
+            onClose={() => setOpenCandidateModal(false)}
+          />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

@@ -27,6 +27,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { full_name } from "./helpers/helper";
 import { login } from "./AuthAPI";
 import Layout from "./pages/Layout";
+import Profile from "./pages/Profile";
 
 function App() {
   const location = useLocation();
@@ -59,12 +60,12 @@ function App() {
         setUser(data);
         if (status === "success") {
           const loggedinUser = full_name(data.first_name, data.last_name);
-          navigate("/");
           const message = `${loggedinUser} logged in successfully`;
           const notify = () => {
             toast.success(message, {
               position: toast.POSITION.TOP_CENTER,
             });
+            navigate("/profile");
           };
           notify();
         }
@@ -97,7 +98,6 @@ function App() {
       const { token } = response;
       setToken(token);
       localStorage.setItem("token", token);
-      navigate("/");
     } catch (error) {
       console.error(
         "Login failed:",
@@ -236,6 +236,18 @@ function App() {
             token ? (
               <Layout user={user}>
                 <PollVote user={user} />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            token ? (
+              <Layout user={user}>
+                <Profile user={user} />
               </Layout>
             ) : (
               <Navigate to="/login" />

@@ -84,7 +84,6 @@ const createUser = async (req, res) => {
       },
     });
 
-    console.log("User created successfully");
     res.json({ status: "success", data: user });
   } catch (error) {
     if (fileName) {
@@ -248,6 +247,9 @@ async function userDetail(req, res) {
         id: true,
         first_name: true,
         last_name: true,
+        email: true,
+        dob: true,
+        gender: true,
         photo: true,
         username: true,
         role: true,

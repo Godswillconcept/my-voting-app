@@ -1,12 +1,16 @@
 import { Button, FileInput, Label, Modal } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { previewExcelFile } from "../../helpers/helper";
 
 function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
   const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    previewExcelFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -19,11 +23,26 @@ function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
     try {
       const url = "/platforms/bulk-create";
       const response = await axios.post(url, formData);
-      if (response.data.status === "success") {
+      const { status, data } = response.data;
+      if (status === "success") {
         fetchPlatforms();
       }
+      const message = "Platforms created in batch";
+      const notify = () => {
+        toast.success(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      };
+      notify();
     } catch (error) {
       console.log({ status: "failed", data: error });
+      const message = "Failed to create platforms batch";
+      const notify = () => {
+        toast.error(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      };
+      notify();
     }
     setFile({
       file: null,
@@ -33,7 +52,8 @@ function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
 
   return (
     <div>
-      <Modal show={openModal} onClose={onClose}>
+      <ToastContainer />
+      <Modal show={openModal} onClose={onClose} size="3xl">
         <Modal.Header>Create Bulk Platforms with xls file</Modal.Header>
         <Modal.Body>
           <form className="space-y-6">
@@ -49,6 +69,7 @@ function PlatformExcelFile({ openModal, onClose, fetchPlatforms }) {
               />
             </div>
           </form>
+          <div id="spreadsheet-container" className="preview-table"></div>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handleSubmit}>Submit</Button>

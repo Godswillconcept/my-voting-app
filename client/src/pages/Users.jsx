@@ -9,12 +9,10 @@ import UserExcelFile from "../partials/users/UserExcelFile";
 import UserTable from "../partials/users/UserTable";
 
 function Users({user}) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openUserExcelModal, setOpenUserExcelModal] = useState(false);
   const [users, setUsers] = useState([]);
 
-  console.log('role', user.role)
   const fetchUsers = async () => {
     try {
       const response = await axios.get("/users");
