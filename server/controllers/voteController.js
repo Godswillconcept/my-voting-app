@@ -3,30 +3,96 @@ const prisma = new PrismaClient();
 
 const getAllVotes = async (req, res) => {
   try {
-    const votes = await prisma.vote.findMany();
-    res.json({ status: "success", data: votes });
+    // Get grouped votes
+    const groupedVotes = await prisma.vote.groupBy({
+      by: ["candidate_id", "poll_id"],
+      _count: {
+        id: true,
+      },
+    });
+
+    // Process the results to fetch related poll and candidate data
+    const votesWithDetails = await Promise.all(
+      groupedVotes.map(async (groupedVote) => {
+        const candidate = await prisma.candidate.findUnique({
+          where: { id: groupedVote.candidate_id },
+          include: {
+            platform: true, // Assuming platform is a relation in the candidate model
+          },
+        });
+        const poll = await prisma.poll.findUnique({
+          where: { id: groupedVote.poll_id },
+        });
+
+        // Combine the grouped vote data with related poll and candidate data
+        return {
+          ...groupedVote,
+          poll,
+          candidate,
+        };
+      })
+    );
+    res.json({
+      status: "success",
+      data: votesWithDetails,
+    });
   } catch (error) {
-    res.json({ status: "failed", error: "Error retrieving votes" });
+    console.error("Error retrieving vote information:", error);
+    res
+      .status(500)
+      .json({ status: "failed", error: "Error retrieving vote information" });
   }
 };
 
-const getVoteById = async (req, res) => {
-  const { id } = req.params;
+async function getVoteByPoll(req, res) {
+  const { pollId } = req.params;
+
   try {
-    const vote = await prisma.vote.findUnique({
+    // Get grouped votes
+    const groupedVotes = await prisma.vote.groupBy({
+      by: ["poll_id", "candidate_id"],
+      _count: {
+        id: true,
+      },
       where: {
-        id: parseInt(id),
+        poll_id: parseInt(pollId),
       },
     });
-    if (vote) {
-      res.json({ status: "success", data: vote });
-    } else {
-      res.json({ status: "warning", data: "Vote not found" });
-    }
+
+    // Process the results to fetch related poll and candidate data
+    const voteByPoll = await Promise.all(
+      groupedVotes.map(async (groupedVote) => {
+        const candidate = await prisma.candidate.findUnique({
+          where: { id: groupedVote.candidate_id },
+          select: {
+            id: true,
+            name: true,
+            platform: true,
+            photo: true,
+            poll: true,
+          },
+        });
+
+        // Combine the grouped vote data with related poll and candidate data
+        return {
+          ...groupedVote,
+          poll,
+          candidate,
+        };
+      })
+    );
+
+    res.json({
+      status: "success",
+      data: voteByPoll,
+    });
   } catch (error) {
-    res.json({ status: "failed", data: "Error retrieving vote" });
+    console.error("Error retrieving vote information:", error);
+    res
+      .status(500)
+      .json({ status: "failed", error: "Error retrieving vote information" });
   }
-};
+}
 
 const createVote = async (req, res) => {
   const { candidate_id, poll_id } = req.body;
@@ -49,7 +115,7 @@ const createVote = async (req, res) => {
 const votesPerCandidate = async (req, res) => {
   try {
     const votesPerCandidate = await prisma.vote.groupBy({
-      by: ['candidate_id'],
+      by: ["candidate_id"],
       where: {
         poll_id: 1, // Replace 'pollId' with the actual poll ID
       },
@@ -63,11 +129,10 @@ const votesPerCandidate = async (req, res) => {
   }
 };
 
-
 const leadingCandidates = async (req, res) => {
   try {
     const leadingCandidates = await prisma.vote.groupBy({
-      by: ['candidate_id'],
+      by: ["candidate_id"],
       where: {
         poll_id: pollId, // Replace 'pollId' with the actual poll ID
       },
@@ -76,36 +141,36 @@ const leadingCandidates = async (req, res) => {
       },
       orderBy: {
         _count: {
-          candidate_id: 'desc',
+          candidate_id: "desc",
         },
       },
     });
-    res.json({leadingCandidates})
+    res.json({ leadingCandidates });
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 const totalVotesPerPoll = async (req, res) => {
   try {
     const totalVotesPerPoll = await prisma.vote.groupBy({
-      by: ['poll_id'],
+      by: ["poll_id"],
       _count: {
         poll_id: true,
       },
     });
 
-    res.json({totalVotesPerPoll})
+    res.json({ totalVotesPerPoll });
   } catch (error) {
     console.log(error);
   }
-} 
+};
 
 module.exports = {
   getAllVotes,
-  getVoteById,
+  getVoteByPoll,
   createVote,
   votesPerCandidate,
   leadingCandidates,
-  totalVotesPerPoll
+  totalVotesPerPoll,
 };

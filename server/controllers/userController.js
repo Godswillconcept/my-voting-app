@@ -138,13 +138,13 @@ const bulkCreateUsers = async (req, res) => {
       try {
         const existingUser = await prisma.user.findUnique({
           where: {
-            phone: user.phone,
+            phone: `0${user.phone}`, // Convert phone number to 0$user.phone,
           },
         });
 
         if (!existingUser) {
           const createdUser = await prisma.user.create({
-            data: user,
+            data: {...user, phone: `0${user.phone}`},
           });
           createdUsers.push(createdUser);
         }

@@ -86,7 +86,7 @@ function Profile({ user }) {
               <h3 className="text-2xl font-bold dark:text-white capitalize">
                 {full_name(user.first_name, user.last_name)}
               </h3>
-              <p className="italic dark:text-gray-200">@{user.username}</p>
+              <p className=" dark:text-gray-200">@{user.username}</p>
             </div>
           </div>
           <div className="bg-white dark:bg-gray-700 rounded-xl shadow-md mb-5">
@@ -175,10 +175,7 @@ function Profile({ user }) {
                       <Timeline.Item>
                         <Timeline.Point icon={HiCalendar} />
                         <Timeline.Content>
-                          <Timeline.Time>
-                            {/* {dateFormat(poll.start_time)} */}
-                            12/08/2024
-                          </Timeline.Time>
+                          <Timeline.Time>12/08/2024</Timeline.Time>
                           <Timeline.Title>Election</Timeline.Title>
                           <Timeline.Body>Description</Timeline.Body>
                         </Timeline.Content>
@@ -193,7 +190,6 @@ function Profile({ user }) {
                 <h2 className="text-2xl font-bold dark:text-white px-3 my-3">
                   Poll Vote Updates
                 </h2>
-            
               </div>
             </div>
           </div>

@@ -53,7 +53,7 @@ const {
 
 const {
   getAllVotes,
-  getVoteById,
+  getVoteByPoll,
   createVote,
   voteCount,
   votesPerCandidate,
@@ -116,10 +116,12 @@ router.put("/reviews/:id/update", verifyToken, updateReview);
 router.delete("/reviews/:id/delete", verifyToken, isAdmin, deleteReview);
 
 // vote routes
-router.get("/votes", verifyToken, isAdmin, getAllVotes);
-router.get("/votes/:id", verifyToken, getVoteById);
+router.get("/votes", verifyToken, getAllVotes);
+router.get("/votes/:pollId", getVoteByPoll);
 router.post("/votes/vote", verifyToken, createVote);
 router.get("/votes/count", votesPerCandidate);
-router.get("/votes/candidates", leadingCandidates);
-router.get("", totalVotesPerPoll);
+router.get("/votes/candidates", verifyToken, leadingCandidates);
+
+
+
 module.exports = router;

@@ -28,6 +28,7 @@ import { full_name } from "./helpers/helper";
 import { login } from "./AuthAPI";
 import Layout from "./pages/Layout";
 import Profile from "./pages/Profile";
+import VoteAnalysis from "./pages/VoteAnalysis";
 
 function App() {
   const location = useLocation();
@@ -59,8 +60,8 @@ function App() {
         const { status, data } = response.data;
         setUser(data);
         if (status === "success") {
-          const loggedinUser = full_name(data.first_name, data.last_name);
-          const message = `${loggedinUser} logged in successfully`;
+          const authenticatedUser = full_name(data.first_name, data.last_name);
+          const message = `${authenticatedUser} logged in successfully`;
           const notify = () => {
             toast.success(message, {
               position: toast.POSITION.TOP_CENTER,
@@ -260,6 +261,18 @@ function App() {
             <Layout user={user}>
               <NotFound />
             </Layout>
+          }
+        />
+        <Route
+          path="/vote-analysis"
+          element={
+            token ? (
+              <Layout user={user}>
+                <VoteAnalysis />
+              </Layout>
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
       </Routes>
