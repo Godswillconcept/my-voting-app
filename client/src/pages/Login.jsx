@@ -50,19 +50,19 @@ function Login({ onLogin }) {
   };
 
   return (
-    <section class="bg-white dark:bg-gray-900 flex">
+    <section class="bg-white dark:bg-gray-900 flex md:flex-row flex-col-reverse md:items-start items-center md:justify-start justify-center">
       <ToastContainer />
-      <div className="auth w-1/2 flex justify-center h-screen items-center">
-        <div className="text-white">
+      <div className="md:w-1/2 w-full flex justify-center md:h-screen h-auto items-center">
+        <div className="text-white md:text-left text-center">
           <h3 className="text-xl font-extrabold leading-none tracking-tight  sm:text-2xl md:text-3xl lg:text-4xl dark:text-whitesemibold">
             OneVote
           </h3>
-          <p>Keep track of your voting process. Login to continue.</p>
+          <p className="md:mt-4 mt-2">Keep track of your voting process. Login to continue.</p>
         </div>
       </div>
-      <div className="flex items-center justify-center mx-auto">
-        <form encType="multipart/form-data" className="space-y-3">
-          <h2 className="text-4xl font-bold dark:text-white my-4">
+      <div className="md:w-1/2 w-full md:mx-0 mx-auto">
+        <form encType="multipart/form-data" className="space-y-3 md:mt-0 mt-4">
+          <h2 className="text-4xl font-bold dark:text-white my-4 md:mt-0">
             Login to Continue
           </h2>
 
