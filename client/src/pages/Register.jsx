@@ -106,21 +106,21 @@ const [error, setError] = useState();
   };
 
   return (
-    <section class="bg-white dark:bg-gray-900 flex flex-col md:flex-row">
+    <section class="bg-white dark:bg-gray-900 flex">
       <ToastContainer />
-      <div className="auth w-full md:w-1/2 flex justify-center h-screen items-center md:h-auto">
-        <div className="text-white md:text-left text-center">
+      <div className="auth w-1/2 flex justify-center h-screen items-center">
+        <div className="text-white">
           <h3 className="text-xl font-extrabold leading-none tracking-tight  sm:text-2xl md:text-3xl lg:text-4xl dark:text-whitesemibold">
             OneVote
           </h3>
-          <p className="md:w-1/2">Keep track of your voting process. Register to enjoy more.</p>
+          <p>Keep track of your voting process. Register to enjoy more.</p>
         </div>
       </div>
-      <div className="mx-auto max-w-2xl py-1 md:w-1/2 md:py-5">
+      <div className=" mx-auto max-w-2xl py-1">
         <form
           onSubmit={handleSubmit}
           encType="multipart/form-data"
-          className="py-5 md:py-0"
+          className="py-5"
         >
           <div className="grid gap-2 sm:grid-cols-2 sm:gap-4">
             <div className="w-full">
