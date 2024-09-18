@@ -37,7 +37,10 @@ function App() {
   const [token, setToken] = useState("");
   const [user, setUser] = useState(null); // Initialize user as null
 
-  axios.defaults.baseURL = "http://localhost:3300";
+  // Use the environment variable for the API base URL
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  axios.defaults.baseURL = API_URL;
   axios.interceptors.request.use(
     (config) => {
       const token = getAuthToken();

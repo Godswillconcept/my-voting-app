@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 const adminRoute = require("./routes/adminRoute");
 const app = express();
-const port = 3300;
+const PORT = process.env.PORT || 3300;
 
 app.use(express.json());
 app.use(cors());
@@ -35,8 +35,8 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(port, () =>
+app.listen(PORT, () =>
   console.log(
-    `server listening on port ${port}\nVisit http://localhost:${port}`
+    `server listening on port ${PORT}\nVisit http://localhost:${PORT}`
   )
 );
