@@ -8,6 +8,7 @@ const adminRoute = require("./routes/adminRoute");
 const app = express();
 const PORT = process.env.PORT || 3300;
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 app.use(express.static("uploads"));
@@ -40,3 +41,5 @@ app.listen(PORT, () =>
     `server listening on port ${PORT}\nVisit http://localhost:${PORT}`
   )
 );
+
+module.export = app;

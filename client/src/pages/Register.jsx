@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -21,7 +20,7 @@ function Register() {
     photo: "",
   });
   const [passwordError, setPasswordError] = useState("");
-const [error, setError] = useState();
+  const [error, setError] = useState();
 
   const handleChange = (e) => {
     if (e.target.name === "photo") {
@@ -111,7 +110,7 @@ const [error, setError] = useState();
       <div className="auth w-1/2 flex justify-center h-screen items-center">
         <div className="text-white">
           <h3 className="text-xl font-extrabold leading-none tracking-tight  sm:text-2xl md:text-3xl lg:text-4xl dark:text-whitesemibold">
-            OneVote
+            VoteHive
           </h3>
           <p>Keep track of your voting process. Register to enjoy more.</p>
         </div>
@@ -307,7 +306,8 @@ const [error, setError] = useState();
           <Button
             color="transparent"
             pill
-            className="bg-primary text-white  px-8 my-4 hover:bg-blue-800" onClick={handleSubmit}
+            className="bg-primary text-white  px-8 my-4 hover:bg-blue-800"
+            onClick={handleSubmit}
           >
             Register
           </Button>

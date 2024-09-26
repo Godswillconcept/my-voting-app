@@ -3,14 +3,14 @@ import { Button, Label, TextInput } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { forgotPassword } from "../AuthAPI";
 
-function Login({ onLogin }) {
+function ForgotPassword() {
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
   const [user, setUser] = useState({
     email: "",
-    password: "",
   });
 
   const handleChange = (e) => {
@@ -25,10 +25,10 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     try {
-      if (!user.email || !user.password) {
-        setError("Email and Password are required!");
+      if (!user.email) {
+        setError("Email is required!");
         const notify = () => {
-          toast.error("Email and Password are required!", {
+          toast.error("Email is required!", {
             position: toast.POSITION.TOP_CENTER,
           });
         };
@@ -37,13 +37,24 @@ function Login({ onLogin }) {
       }
       const formData = new FormData();
       formData.append("email", user.email);
-      formData.append("password", user.password);
-      await onLogin(formData);
-      setError("");
+      const response = await forgotPassword(formData);
+      if (response.status === "success") {
+        setError("");
+        const notify = () => {
+          toast.success("Password reset email sent!", {
+            position: toast.POSITION.TOP_CENTER,
+          });
+        };
+        notify();
+        navigate("/reset-password", { state: { email: user.email } });
+      } else {
+        setError("Invalid email or password");
+        console.error("Forgot password failed:", response.status);
+      }
     } catch (error) {
       setError("Invalid email or password");
       console.error(
-        "Login failed:",
+        "Forgot password failed:",
         error.response ? error.response.data.error : error.message
       );
     }
@@ -57,13 +68,13 @@ function Login({ onLogin }) {
           <h3 className="text-xl font-extrabold leading-none tracking-tight  sm:text-2xl md:text-3xl lg:text-4xl dark:text-whitesemibold">
             VoteHive
           </h3>
-          <p>Keep track of your voting process. Login to continue.</p>
+          <p>Keep track of your voting process. Reset password to continue.</p>
         </div>
       </div>
       <div className="flex items-center justify-center mx-auto">
         <form encType="multipart/form-data" className="space-y-3">
           <h2 className="text-4xl font-bold dark:text-white my-4">
-            Login to Continue
+            Reset Password
           </h2>
 
           <div>
@@ -80,20 +91,6 @@ function Login({ onLogin }) {
               required
             />
           </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="password" value="Password" />
-            </div>
-            <TextInput
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={user.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
 
           <Button
             color="transparent"
@@ -101,24 +98,15 @@ function Login({ onLogin }) {
             className="bg-primary text-white  px-8 my-4 hover:bg-blue-800"
             onClick={handleSubmit}
           >
-            Login
+            Reset Password
           </Button>
-          <h5 className="text-xl font-bold dark:text-white ">
-            Don't have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-            >
-              Sign up Here
-            </a>{" "}
-          </h5>
           <h5 className="text-base font-bold dark:text-white ">
-            Forget Password?{" "}
+            Remember your password?{" "}
             <a
-              href="/forgot-password"
+              href="/login"
               className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
             >
-              Click Here
+              Login Here
             </a>{" "}
           </h5>
         </form>
@@ -127,4 +115,4 @@ function Login({ onLogin }) {
   );
 }
 
-export default Login;
+export default ForgotPassword;

@@ -1,14 +1,16 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
-const { unlink } = require("fs/promises");
 const jwt = require("jsonwebtoken");
+const OTPGenerator = require("otp-generator");
+const { unlink } = require("fs/promises");
 const fs = require("fs");
 const {
   uploadFile,
   dateToISOString,
   parseExcel,
-} = require("../helpers/helper");
+  transporter,
+} = require("../helpers");
 
 // Retrieve all users
 let getAllUsers = async (req, res) => {
@@ -144,7 +146,7 @@ const bulkCreateUsers = async (req, res) => {
 
         if (!existingUser) {
           const createdUser = await prisma.user.create({
-            data: {...user, phone: `0${user.phone}`},
+            data: { ...user, phone: `0${user.phone}` },
           });
           createdUsers.push(createdUser);
         }
@@ -217,7 +219,7 @@ let deleteUser = async (req, res) => {
 };
 
 // Login user and generate token
-async function loginUser(req, res) {
+const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
@@ -237,9 +239,9 @@ async function loginUser(req, res) {
   );
 
   res.json({ token });
-}
+};
 
-async function userDetail(req, res) {
+const userDetail = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
@@ -261,13 +263,66 @@ async function userDetail(req, res) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
 
 // Logout user and clear token
 const logoutUser = async (req, res) => {
   res
     .clearCookie("token")
     .json({ status: "success", data: "Logged out successfully" });
+};
+
+const forgotPassword = (req, res) => {
+  const { email } = req.body;
+  // const otp = Math.floor(100000 + Math.random() * 900000);
+  // with otp generator
+  const otp = OTPGenerator.generate(6, {
+    upperCase: true,
+    specialChars: false,
+  });
+  // Define the email message
+  const mailOptions = {
+    from: email,
+    to: [process.env.EMAIL_USERNAME, "abass@alusofttechnologies.com"],
+    subject: "Password Reset",
+    text: `Your OTP is: ${otp}`,
+  };
+
+  // Send the email using NodeMailer
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+    console.log("Email sent: " + info.response);
+    res.json({ status: "success", message: `OTP sent to ${email}` });
+  });
+};
+
+const resetPassword = async (req, res) => {
+  const { otp, email, password } = req.body;
+
+  // Verify OTP
+  if (otp) {
+    try {
+      // Hash and store new password in database
+      const hashedPassword = await bcrypt.hash(password, 10);
+      // Update user document with new password
+      const user = await prisma.user.update({
+        where: {
+          email,
+        },
+        data: {
+          password: hashedPassword,
+        },
+      });
+      res.json({ status: "success", data: "Password reset successful" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  } else {
+    res.send("Invalid OTP");
+  }
 };
 
 module.exports = {
@@ -281,4 +336,6 @@ module.exports = {
   logoutUser,
   latestUsersByCount,
   userDetail,
+  forgotPassword,
+  resetPassword,
 };

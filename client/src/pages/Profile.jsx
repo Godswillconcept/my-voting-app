@@ -44,15 +44,15 @@ function Profile({ user }) {
   }, []);
 
   return (
-    <div>
-      <nav aria-label="Breadcrumb" className="flex gap-5">
-        <ol className="list-none p-0 inline-flex">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Breadcrumb" className="flex gap-5 sm:gap-10 lg:gap-20">
+        <ol className="list-none p-0 inline-flex sm:flex-row lg:flex-col">
           <li className="flex items-center">
             <a href="/" className="text-blue-500">
               Home
             </a>
             <svg
-              className="fill-current w-3 h-3 mx-2"
+              className="fill-current w-3 h-3 mx-2 sm:mx-4 lg:mx-6"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -66,10 +66,10 @@ function Profile({ user }) {
           </li>
         </ol>
       </nav>
-      <div className="grid grid-cols-3 gap-6 mt-5">
-        <div className="col-span-1">
-          <div className="bg-white dark:bg-gray-700 rounded-xl shadow-md mb-5">
-            <div className="flex justify-center items-center p-5">
+      <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mt-5">
+        <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-md p-5">
+            <div className="flex justify-center items-center">
               <img
                 src={
                   user.photo !== null
@@ -79,35 +79,33 @@ function Profile({ user }) {
                     : female
                 }
                 alt={`User ${user.name}`}
-                className="rounded-full w-11/12 hover:w-3/4 hover:duration-100 hover:scale-100 border-8 border-blue-800"
+                className="rounded-full w-11/12 sm:w-3/4 lg:w-2/3 hover:w-3/4 hover:duration-100 hover:scale-100 border-8 border-blue-800"
               />
             </div>
-            <div className="text-center pb-5">
+            <div className="text-center pt-4">
               <h3 className="text-2xl font-bold dark:text-white capitalize">
                 {full_name(user.first_name, user.last_name)}
               </h3>
-              <p className=" dark:text-gray-200">@{user.username}</p>
+              <p className="dark:text-gray-200">@{user.username}</p>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-700 rounded-xl shadow-md mb-5">
-            <div className="flex  items-center py-5 px-12">
+          <div className="bg-white rounded-xl shadow-md p-5 mt-4">
+            <div className="flex items-center py-4 px-6 border-b border-gray-200">
               <IoMailOpen color="blue" size="25" className="me-4" />
               {user.email}
             </div>
-            <hr class="w-11/12 h-[2px] mx-auto bg-gray-100 border-0 rounded dark:bg-gray-50" />
-            <div className="flex items-center py-5 px-12">
+            <div className="flex items-center py-4 px-6 border-b border-gray-200">
               <FaGenderless color="blue" size="25" className="me-4" />
               {user.gender}
             </div>
-            <hr class="w-11/12 h-[2px] mx-auto bg-gray-100 border-0 rounded dark:bg-gray-50" />
-            <div className="flex items-center py-5 px-12">
+            <div className="flex items-center py-4 px-6">
               <FaCalendarAlt color="blue" size="25" className="me-4" />
               {dateFormat(user.dob)}
             </div>
           </div>
         </div>
-        <div className="col-span-2 bg-white dark:bg-gray-700 rounded-xl shadow-md mb-5">
-          <div className="py-5 px-12">
+        <div className="col-span-2 sm:col-span-1 lg:col-span-2 bg-white rounded-xl shadow-md p-5">
+          <div className="py-4 px-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold dark:text-white mb-3">
               Latest Updates
             </h2>
@@ -224,3 +222,5 @@ function Profile({ user }) {
 }
 
 export default Profile;
+
+

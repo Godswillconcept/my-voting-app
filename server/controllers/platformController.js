@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 const { unlink } = require("fs/promises");
 const fs = require("fs");
-const { uploadFile, parseExcel } = require("../helpers/helper");
+const { uploadFile, parseExcel } = require("../helpers");
 
 let getAllPlatforms = async (req, res) => {
   try {

@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const { dateToISOString } = require("../helpers/helper");
+const { dateToISOString } = require("../helpers");
 
 let getAllPolls = async (req, res) => {
   try {

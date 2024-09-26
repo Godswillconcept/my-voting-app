@@ -10,6 +10,8 @@ const {
   loginUser,
   logoutUser,
   userDetail,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/userController");
 
 const {
@@ -60,7 +62,7 @@ const {
   leadingCandidates,
   totalVotesPerPoll,
 } = require("../controllers/voteController");
-const { verifyToken, isAdmin } = require("../helpers/helper");
+const { verifyToken, isAdmin } = require("../helpers");
 const router = Router();
 
 // user routes
@@ -74,6 +76,8 @@ router.delete("/users/:id/delete", verifyToken, isAdmin, deleteUser);
 router.post("/users/login", loginUser);
 router.get("/users/detail", verifyToken, userDetail);
 router.post("/users/logout", logoutUser);
+router.post("/users/forgot-password", forgotPassword);
+router.post("/users/reset-password", resetPassword);
 
 // platform routes
 router.get("/platforms", getAllPlatforms);
@@ -121,7 +125,5 @@ router.get("/votes/:pollId", getVoteByPoll);
 router.post("/votes/vote", verifyToken, createVote);
 router.get("/votes/count", votesPerCandidate);
 router.get("/votes/candidates", verifyToken, leadingCandidates);
-
-
 
 module.exports = router;

@@ -1,6 +1,15 @@
 const { promisify } = require("util");
 const xlsx = require("xlsx");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE,
+  auth: {
+    user: process.env.EMAIL_USERNAME,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
 
 const uploadFile = async (file, destination) => {
   const fileName =
@@ -55,7 +64,6 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-
 const isAdmin = (req, res, next) => {
   if (req.role !== "Admin") {
     return res.status(403).json({ error: "Permission denied" });
@@ -68,5 +76,6 @@ module.exports = {
   dateToISOString,
   parseExcel,
   verifyToken,
-  isAdmin
+  isAdmin,
+  transporter,
 };

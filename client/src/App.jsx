@@ -29,6 +29,8 @@ import { login } from "./AuthAPI";
 import Layout from "./pages/Layout";
 import Profile from "./pages/Profile";
 import VoteAnalysis from "./pages/VoteAnalysis";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   const location = useLocation();
@@ -174,6 +176,8 @@ function App() {
         />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/users"
           element={
