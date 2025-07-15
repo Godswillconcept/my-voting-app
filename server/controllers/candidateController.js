@@ -1,22 +1,19 @@
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const prisma = new PrismaClient();
 const { unlink } = require("fs/promises");
 const fs = require("fs");
 const { uploadFile, parseExcel } = require("../helpers");
+const { Candidate, Platform, Poll } = require("../models");
 
 let getAllCandidates = async (req, res) => {
   try {
-    const candidates = await prisma.candidate.findMany({
-      include: {
-        platform: {
-          select: {
-            name: true,
-            description: true,
-            emblem: true,
-          },
-        },
-      },
+    const candidates = await Candidate.findAll({
+      include: [
+        {
+          model: Platform,
+          as: 'platform',
+          attributes: ['name', 'description', 'emblem']
+        }
+      ]
     });
     res.json({ status: "success", data: candidates });
   } catch (error) {
@@ -27,20 +24,16 @@ let getAllCandidates = async (req, res) => {
 let latestCandidatesByCount = async (req, res) => {
   try {
     const { count = 10 } = req.body;
-    const candidates = await prisma.candidate.findMany({
-      take: Number(count),
-      orderBy: {
-        created_at: "desc",
-      },
-      include: {
-        platform: {
-          select: {
-            name: true,
-            description: true,
-            emblem: true,
-          },
-        },
-      },
+    const candidates = await Candidate.findAll({
+      limit: Number(count),
+      order: [['created_at', 'DESC']],
+      include: [
+        {
+          model: Platform,
+          as: 'platform',
+          attributes: ['name', 'description', 'emblem']
+        }
+      ]
     });
     res.json({ status: "success", data: candidates });
   } catch (error) {
@@ -51,19 +44,22 @@ let latestCandidatesByCount = async (req, res) => {
 let candidateDetail = async (req, res) => {
   const { id } = req.params;
   try {
-    const candidate = await prisma.candidate.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-      select: {
-        name: true,
-        bio: true,
-        platform: true,
-        poll: true,
-        photo: true,
-        is_independent: true,
-      },
+    const candidate = await Candidate.findByPk(id, {
+      attributes: ['name', 'bio', 'photo', 'is_independent'],
+      include: [
+        {
+          model: Platform,
+          as: 'platform',
+          attributes: ['id', 'name', 'description', 'emblem']
+        },
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
     });
+
     if (candidate) {
       res.json({ status: "success", data: candidate });
     } else {
@@ -75,32 +71,37 @@ let candidateDetail = async (req, res) => {
 };
 
 const createCandidate = async (req, res) => {
-  const { name, bio, platform_id, poll_id, isIndependent } = req.body; 
+  const { name, bio, platform_id, poll_id, is_independent } = req.body; 
   let fileName;
 
   try {
-    if (req.files) {
-      fileName = await uploadFile(req.files.photo, "./uploads/candidates");
-    }
+    const transaction = await sequelize.transaction();
+    
+    try {
+      if (req.files) {
+        fileName = await uploadFile(req.files.photo, "./uploads/candidates");
+      }
 
-    const candidate = await prisma.candidate.create({
-      data: {
+      const candidate = await Candidate.create({
         name,
         bio,
         platform_id: platform_id !== "null" ? parseInt(platform_id) : null, 
         poll_id: parseInt(poll_id),
-        is_independent: isIndependent !== "undefined" ? true : false, 
+        is_independent: is_independent !== "undefined" ? true : false, 
         photo: !req.files ? null : `candidates/${fileName}`,
-      },
-    });
+      }, { transaction });
 
-    res.json({ status: "success", data: candidate });
-    console.log("Candidate created successfully");
-  } catch (error) {
-    if (fileName) {
-      await unlink(`./uploads/candidates/${fileName}`);
+      await transaction.commit();
+      res.json({ status: "success", data: candidate });
+      console.log("Candidate created successfully");
+    } catch (error) {
+      await transaction.rollback();
+      if (fileName) {
+        await unlink(`./uploads/candidates/${fileName}`);
+      }
+      throw error;
     }
-
+  } catch (error) {
     console.error(error);
     res.json({ status: "failed", error: "Error creating candidate" });
   }
@@ -108,46 +109,71 @@ const createCandidate = async (req, res) => {
 
 let updateCandidate = async (req, res) => {
   const { id } = req.params;
-  const { name, bio, platform_id } = req.body;
+  const { name, bio, platform_id, poll_id, is_independent } = req.body;
   let fileName;
 
   try {
-    if (req.files) {
-      fileName = await uploadFile(req.files.photo, "./uploads/candidates");
-    }
+    const transaction = await sequelize.transaction();
+    
+    try {
+      if (req.files) {
+        fileName = await uploadFile(req.files.photo, "./uploads/candidates");
+      }
 
-    const updatedCandidate = await prisma.candidate.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        name,
-        bio,
-        platform_id: platform_id !== "null" ? parseInt(platform_id) : null, // Changed '!=' to '!=='
-        poll_id: parseInt(poll_id),
-        is_independent: isIndependent !== "undefined" ? true : false, // Changed '!=' to '!=='
-        photo: !req.files ? null : `candidates/${fileName}`,
-      },
-    });
-    res.json({ status: "success", data: updatedCandidate });
-    console.log("Candidate updated successfully");
+      const updatedCandidate = await Candidate.update(
+        {
+          name,
+          bio,
+          platform_id: platform_id !== "null" ? parseInt(platform_id) : null,
+          poll_id: parseInt(poll_id),
+          is_independent: is_independent !== "undefined" ? true : false,
+          photo: !req.files ? null : `candidates/${fileName}`,
+        },
+        {
+          where: {
+            id: parseInt(id)
+          },
+          returning: true,
+          transaction
+        }
+      );
+
+      await transaction.commit();
+      res.json({ status: "success", data: updatedCandidate[1][0] });
+      console.log("Candidate updated successfully");
+    } catch (error) {
+      await transaction.rollback();
+      if (fileName) {
+        await unlink(resolve("uploads", "candidates", fileName), (err) =>
+          console.log(err?.message || `Deleted ${fileName}`)
+        );
+      }
+      throw error;
+    }
   } catch (error) {
-    unlink(resolve("uploads", "candidates", fileName), (err) =>
-      console.log(err?.message || `Deleted ${fileName}`)
-    );
-    res.json({ staus: "failed", error: "Error updating candidate" });
+    res.json({ status: "failed", error: "Error updating candidate" });
   }
 };
 
 let deleteCandidate = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedCandidate = await prisma.candidate.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.json({ status: "success", data: deletedCandidate });
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const deletedCandidate = await Candidate.destroy({
+        where: {
+          id: parseInt(id)
+        },
+        transaction
+      });
+
+      await transaction.commit();
+      res.json({ status: "success", data: deletedCandidate });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     res
       .status(500)

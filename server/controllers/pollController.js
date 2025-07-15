@@ -1,11 +1,9 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-
 const { dateToISOString } = require("../helpers");
+const { Poll, Candidate, Platform, PollPlatform } = require("../models");
 
 let getAllPolls = async (req, res) => {
   try {
-    const polls = await prisma.poll.findMany();
+    const polls = await Poll.findAll();
     res.json({ status: "success", data: polls });
   } catch (error) {
     res.json({ status: "failed", error: "Error retrieving polls" });
@@ -14,45 +12,43 @@ let getAllPolls = async (req, res) => {
 
 let activePolls = async (req, res) => {
   try {
-    const polls = await prisma.poll.findMany({
+    const polls = await Poll.findAll({
       where: {
-        OR: [
+        [Op.or]: [
           {
             start_time: {
-              gte: new Date(),
+              [Op.gte]: new Date(),
             },
           },
           {
             end_time: {
-              gte: new Date(),
+              [Op.gte]: new Date(),
             },
           },
         ],
       },
-      orderBy: {
-        id: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        start_time: true,
-        end_time: true,
-        candidates: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            photo: true,
-            platform: true,
-          },
+      order: [
+        ['id', 'ASC']
+      ],
+      attributes: ['id', 'name', 'description', 'start_time', 'end_time'],
+      include: [
+        {
+          model: Candidate,
+          as: 'candidates',
+          attributes: ['id', 'name', 'bio', 'photo', 'platform_id'],
         },
-        pollPlatforms: {
-          select: {
-            platform: true,
-          },
-        },
-      },
+        {
+          model: PollPlatform,
+          as: 'pollPlatforms',
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        }
+      ]
     });
     res.json({ status: "success", data: polls });
   } catch (error) {
@@ -64,15 +60,22 @@ let activePolls = async (req, res) => {
 const createPoll = async (req, res) => {
   const { start_time, end_time, ...pollData } = req.body;
   try {
-    const poll = await prisma.poll.create({
-      data: {
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const poll = await Poll.create({
         ...pollData,
         start_time: dateToISOString(start_time),
         end_time: dateToISOString(end_time),
-      },
-    });
-    res.json({ status: "success", data: poll });
-    console.log("Poll created successfully");
+      }, { transaction });
+
+      await transaction.commit();
+      res.json({ status: "success", data: poll });
+      console.log("Poll created successfully");
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error(error);
     res.json({ status: "failed", error: "Error creating poll" });
@@ -84,17 +87,20 @@ let updatePoll = async (req, res) => {
   const { start_time, end_time, ...pollData } = req.body;
 
   try {
-    const updatedPoll = await prisma.poll.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
+    const updatedPoll = await Poll.update(
+      {
         ...pollData,
         start_time: dateToISOString(start_time),
         end_time: dateToISOString(end_time),
       },
-    });
-    res.json({ status: "success", data: updatedPoll });
+      {
+        where: {
+          id: parseInt(id)
+        },
+        returning: true
+      }
+    );
+    res.json({ status: "success", data: updatedPoll[1][0] });
     console.log("Poll updated successfully");
   } catch (error) {
     res.json({ status: "failed", error: "Error updating poll" });
@@ -104,10 +110,10 @@ let updatePoll = async (req, res) => {
 let deletePoll = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedPoll = await prisma.poll.delete({
+    const deletedPoll = await Poll.destroy({
       where: {
-        id: parseInt(id),
-      },
+        id: parseInt(id)
+      }
     });
     res.json({ status: "success", data: deletedPoll });
   } catch (error) {
@@ -117,49 +123,53 @@ let deletePoll = async (req, res) => {
 
 const attachPlatform = async (req, res) => {
   try {
-    const { platform_ids, poll_id } = req.body;
-    const pollPlatforms = [];
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const { platform_ids, poll_id } = req.body;
+      const pollPlatforms = [];
 
-    // Check if the platform is already associated with the poll
-    const existingPlatforms = await prisma.pollPlatform.findMany({
-      where: {
-        poll_id: parseInt(poll_id),
-        platform_id: {
-          in: platform_ids.map((id) => parseInt(id)),
+      // Check if the platform is already associated with the poll
+      const existingPlatforms = await PollPlatform.findAll({
+        where: {
+          poll_id: parseInt(poll_id),
+          platform_id: {
+            [Op.in]: platform_ids.map((id) => parseInt(id))
+          }
         },
-      },
-    });
+        transaction
+      });
 
-    const existingPlatformIds = existingPlatforms.map(
-      (platform) => platform.platform_id
-    );
+      const existingPlatformIds = existingPlatforms.map(
+        (platform) => platform.platform_id
+      );
 
-    for (const platform_id of platform_ids) {
-      // Check if the platform is not already associated with the poll
-      if (!existingPlatformIds.includes(parseInt(platform_id))) {
-        try {
-          const pollPlatform = await prisma.pollPlatform.create({
-            data: {
+      for (const platform_id of platform_ids) {
+        // Check if the platform is not already associated with the poll
+        if (!existingPlatformIds.includes(parseInt(platform_id))) {
+          try {
+            const pollPlatform = await PollPlatform.create({
               platform_id: parseInt(platform_id),
-              poll_id: parseInt(poll_id),
-            },
-          });
-          pollPlatforms.push(pollPlatform);
-        } catch (error) {
-          console.error("Error adding platform to poll:", error);
-          return res.status(500).json({
-            status: "failed",
-            error: "Error adding platform to poll",
-          });
+              poll_id: parseInt(poll_id)
+            }, { transaction });
+            pollPlatforms.push(pollPlatform);
+          } catch (error) {
+            console.error("Error adding platform to poll:", error);
+            throw error;
+          }
         }
       }
-    }
 
-    console.log(pollPlatforms);
-    return res.json({
-      status: "success",
-      data: pollPlatforms,
-    });
+      await transaction.commit();
+      console.log(pollPlatforms);
+      return res.json({
+        status: "success",
+        data: pollPlatforms,
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error("Error in attaching Platform:", error);
     return res
@@ -171,39 +181,30 @@ const attachPlatform = async (req, res) => {
 let pollDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const poll = await prisma.poll.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        start_time: true,
-        end_time: true,
-        candidates: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            photo: true,
-            platform: true,
-          },
+    const poll = await Poll.findByPk(id, {
+      attributes: ['id', 'name', 'description', 'start_time', 'end_time'],
+      include: [
+        {
+          model: Candidate,
+          as: 'candidates',
+          attributes: ['id', 'name', 'bio', 'photo', 'platform_id'],
         },
-        pollPlatforms: {
-          select: {
-            platform: true,
-          },
-        },
-      },
+        {
+          model: PollPlatform,
+          as: 'pollPlatforms',
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        }
+      ]
     });
+
     if (poll) {
-      res.json({
-        status: "success",
-        data: {
-          ...poll,
-        },
-      });
+      res.json({ status: "success", data: poll });
     } else {
       res.json({ status: "warning", data: "Poll not found" });
     }

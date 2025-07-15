@@ -1,10 +1,22 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { Review, User, Poll } = require("../models");
 
 
 let getAllReviews = async (req, res) => {
   try {
-    const reviews = await prisma.review.findMany();
+    const reviews = await Review.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'first_name', 'last_name']
+        },
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
+    });
     res.json({ status: "success", data: reviews });
   } catch (error) {
     res.json({ status: "failed", error: "Error retrieving reviews" });
@@ -14,10 +26,19 @@ let getAllReviews = async (req, res) => {
 let getReviewById = async (req, res) => {
   const { id } = req.params;
   try {
-    const review = await prisma.review.findUnique({
-      where: {
-        id: parseInt(id),
-      },
+    const review = await Review.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'first_name', 'last_name']
+        },
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
     });
     if (review) {
       res.json({ status: "success", data: review });
@@ -30,47 +51,86 @@ let getReviewById = async (req, res) => {
 };
 
 const createReview = async (req, res) => {
-  const { comment, user_id, poll_id} = req.body;
+  const { comment, poll_id } = req.body;
 
   try {
-    const review = await prisma.review.create({
-      data: { comment, user_id, poll_id},
-    });
-    res.json({ status: "success", data: review });
-    console.log("Review created successfully");
+    const transaction = await sequelize.transaction();
+    
+    try {
+      // Use req.userId from authentication middleware
+      const review = await Review.create({
+        comment,
+        user_id: req.userId,
+        poll_id: parseInt(poll_id)
+      }, { transaction });
+
+      await transaction.commit();
+      res.json({ status: "success", data: review });
+      console.log("Review created successfully");
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error(error);
-    res.json({ status: "failed", error: "Error creating review" });
+    res.status(500).json({ status: "failed", error: "Error creating review" });
   }
 };
 
 let updateReview = async (req, res) => {
   const { id } = req.params;
-  const { comment, user_id, poll_id} = req.body;
+  const { comment, poll_id } = req.body;
 
   try {
-    const updatedReview = await prisma.review.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: { comment, user_id, poll_id},
-    });
-    res.json({ status: "success", data: updatedReview });
-    console.log("Review updated successfully");
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const updatedReview = await Review.update(
+        {
+          comment,
+          user_id: req.userId,
+          poll_id: parseInt(poll_id)
+        },
+        {
+          where: {
+            id: parseInt(id)
+          },
+          returning: true,
+          transaction
+        }
+      );
+
+      await transaction.commit();
+      res.json({ status: "success", data: updatedReview[1][0] });
+      console.log("Review updated successfully");
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
-    res.json({ staus: "failed", error: "Error updating review" });
+    res.json({ status: "failed", error: "Error updating review" });
   }
 };
 
 let deleteReview = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedReview = await prisma.review.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.json({ status: "success", data: deletedReview });
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const deletedReview = await Review.destroy({
+        where: {
+          id: parseInt(id)
+        },
+        transaction
+      });
+
+      await transaction.commit();
+      res.json({ status: "success", data: deletedReview });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     res.status(500).json({ status: "failed", error: "Error deleting review" });
   }

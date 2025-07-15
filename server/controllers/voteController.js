@@ -1,40 +1,39 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { Vote, Candidate, Poll, User } = require("../models");
 
 const getAllVotes = async (req, res) => {
   try {
-    // Get grouped votes
-    const groupedVotes = await prisma.vote.groupBy({
-      by: ["candidate_id", "poll_id"],
-      _count: {
-        id: true,
-      },
+    // Get grouped votes with counts
+    const votes = await Vote.findAll({
+      attributes: [
+        'candidate_id',
+        'poll_id',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'vote_count']
+      ],
+      group: ['candidate_id', 'poll_id'],
+      include: [
+        {
+          model: Candidate,
+          as: 'candidate',
+          attributes: ['id', 'name', 'photo'],
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        },
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
     });
 
-    // Process the results to fetch related poll and candidate data
-    const votesWithDetails = await Promise.all(
-      groupedVotes.map(async (groupedVote) => {
-        const candidate = await prisma.candidate.findUnique({
-          where: { id: groupedVote.candidate_id },
-          include: {
-            platform: true, // Assuming platform is a relation in the candidate model
-          },
-        });
-        const poll = await prisma.poll.findUnique({
-          where: { id: groupedVote.poll_id },
-        });
-
-        // Combine the grouped vote data with related poll and candidate data
-        return {
-          ...groupedVote,
-          poll,
-          candidate,
-        };
-      })
-    );
     res.json({
       status: "success",
-      data: votesWithDetails,
+      data: votes
     });
   } catch (error) {
     console.error("Error retrieving vote information:", error);
@@ -48,43 +47,40 @@ async function getVoteByPoll(req, res) {
   const { pollId } = req.params;
 
   try {
-    // Get grouped votes
-    const groupedVotes = await prisma.vote.groupBy({
-      by: ["poll_id", "candidate_id"],
-      _count: {
-        id: true,
-      },
+    const votes = await Vote.findAll({
+      attributes: [
+        'candidate_id',
+        'poll_id',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'vote_count']
+      ],
+      group: ['candidate_id', 'poll_id'],
       where: {
-        poll_id: parseInt(pollId),
+        poll_id: parseInt(pollId)
       },
+      include: [
+        {
+          model: Candidate,
+          as: 'candidate',
+          attributes: ['id', 'name', 'photo'],
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        },
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
     });
-
-    // Process the results to fetch related poll and candidate data
-    const voteByPoll = await Promise.all(
-      groupedVotes.map(async (groupedVote) => {
-        const candidate = await prisma.candidate.findUnique({
-          where: { id: groupedVote.candidate_id },
-          select: {
-            id: true,
-            name: true,
-            platform: true,
-            photo: true,
-            poll: true,
-          },
-        });
-
-        // Combine the grouped vote data with related poll and candidate data
-        return {
-          ...groupedVote,
-          poll,
-          candidate,
-        };
-      })
-    );
 
     res.json({
       status: "success",
-      data: voteByPoll,
+      data: votes
     });
   } catch (error) {
     console.error("Error retrieving vote information:", error);
@@ -98,71 +94,136 @@ const createVote = async (req, res) => {
   const { candidate_id, poll_id } = req.body;
 
   try {
-    const vote = await prisma.vote.create({
-      data: {
+    const transaction = await sequelize.transaction();
+    
+    try {
+      // Check if user has already voted in this poll
+      const existingVote = await Vote.findOne({
+        where: {
+          user_id: req.userId,
+          poll_id: parseInt(poll_id)
+        },
+        transaction
+      });
+
+      if (existingVote) {
+        await transaction.rollback();
+        return res.status(400).json({
+          status: "failed",
+          error: "User has already voted in this poll"
+        });
+      }
+
+      const vote = await Vote.create({
         candidate_id: parseInt(candidate_id),
         user_id: req.userId,
-        poll_id: parseInt(poll_id),
-      },
-    });
-    res.json({ status: "success", data: vote });
+        poll_id: parseInt(poll_id)
+      }, { transaction });
+
+      await transaction.commit();
+      res.json({ status: "success", data: vote });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error(error);
-    res.json({ status: "failed", error: "Error creating vote" });
+    res.status(500).json({ status: "failed", error: "Error creating vote" });
   }
 };
 
 const votesPerCandidate = async (req, res) => {
   try {
-    const votesPerCandidate = await prisma.vote.groupBy({
-      by: ["candidate_id"],
+    const votes = await Vote.findAll({
+      attributes: [
+        'candidate_id',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'vote_count']
+      ],
+      group: ['candidate_id'],
       where: {
-        poll_id: 1, // Replace 'pollId' with the actual poll ID
+        poll_id: 1 // Replace with actual poll ID
       },
-      _count: {
-        candidate_id: true,
-      },
+      include: [
+        {
+          model: Candidate,
+          as: 'candidate',
+          attributes: ['id', 'name', 'photo'],
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        }
+      ]
     });
-    res.json({ votesPerCandidate });
+
+    res.json({ status: "success", data: votes });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ status: "failed", error: "Error retrieving votes" });
   }
 };
 
 const leadingCandidates = async (req, res) => {
   try {
-    const leadingCandidates = await prisma.vote.groupBy({
-      by: ["candidate_id"],
+    const votes = await Vote.findAll({
+      attributes: [
+        'candidate_id',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'vote_count']
+      ],
+      group: ['candidate_id'],
       where: {
-        poll_id: pollId, // Replace 'pollId' with the actual poll ID
+        poll_id: parseInt(req.params.pollId) // Get poll ID from params
       },
-      _count: {
-        candidate_id: true,
-      },
-      orderBy: {
-        _count: {
-          candidate_id: "desc",
-        },
-      },
+      order: [
+        [sequelize.fn('COUNT', sequelize.col('id')), 'DESC']
+      ],
+      include: [
+        {
+          model: Candidate,
+          as: 'candidate',
+          attributes: ['id', 'name', 'photo'],
+          include: [
+            {
+              model: Platform,
+              as: 'platform',
+              attributes: ['id', 'name', 'description']
+            }
+          ]
+        }
+      ]
     });
-    res.json({ leadingCandidates });
+
+    res.json({ status: "success", data: votes });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ status: "failed", error: "Error retrieving leading candidates" });
   }
 };
 
 const totalVotesPerPoll = async (req, res) => {
   try {
-    const totalVotesPerPoll = await prisma.vote.groupBy({
-      by: ["poll_id"],
-      _count: {
-        poll_id: true,
-      },
+    const votes = await Vote.findAll({
+      attributes: [
+        'poll_id',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'vote_count']
+      ],
+      group: ['poll_id'],
+      include: [
+        {
+          model: Poll,
+          as: 'poll',
+          attributes: ['id', 'name', 'description']
+        }
+      ]
     });
 
-    res.json({ totalVotesPerPoll });
+    res.json({ status: "success", data: votes });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ status: "failed", error: "Error retrieving total votes per poll" });
   }
 };
 

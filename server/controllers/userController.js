@@ -1,8 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
-const OTPGenerator = require("otp-generator");
 const { unlink } = require("fs/promises");
 const fs = require("fs");
 const {
@@ -11,11 +8,12 @@ const {
   parseExcel,
   transporter,
 } = require("../helpers");
+const { User } = require("../models");
 
 // Retrieve all users
 let getAllUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await User.findAll();
     res.json({ status: "success", data: users });
   } catch (error) {
     console.error("Error retrieving users:", error);
@@ -27,11 +25,9 @@ let latestUsersByCount = async (req, res) => {
   try {
     let { count = 5 } = req.body;
 
-    const users = await prisma.user.findMany({
-      take: Number(count),
-      orderBy: {
-        created_at: "desc",
-      },
+    const users = await User.findAll({
+      limit: Number(count),
+      order: [["created_at", "DESC"]],
     });
     res.json({ status: "success", data: users });
   } catch (error) {
@@ -44,20 +40,46 @@ let latestUsersByCount = async (req, res) => {
 let userProfile = async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: parseInt(id),
-      },
+    const user = await User.findByPk(id, {
+      include: [
+        {
+          model: Vote,
+          as: "votes",
+          include: [
+            {
+              model: Poll,
+              as: "poll",
+              attributes: ["name", "description"],
+            },
+            {
+              model: Candidate,
+              as: "candidate",
+              attributes: ["name", "bio", "photo"],
+            },
+          ],
+        },
+        {
+          model: Review,
+          as: "reviews",
+          include: [
+            {
+              model: Poll,
+              as: "poll",
+              attributes: ["name", "description"],
+            },
+          ],
+          attributes: ["comment"],
+        },
+      ],
     });
 
     if (user) {
       res.json({ status: "success", data: user });
     } else {
-      res.status(404).json({ status: "warning", data: "User not found" });
+      res.json({ status: "warning", data: "User not found" });
     }
   } catch (error) {
-    console.error("Error retrieving user:", error);
-    res.status(500).json({ status: "failed", error: "Error retrieving user" });
+    res.json({ status: "failed", error: "Error retrieving user" });
   }
 };
 
@@ -67,31 +89,36 @@ const createUser = async (req, res) => {
   let fileName;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (req.files) {
-      fileName = await uploadFile(req.files.photo, "./uploads/users");
-    }
+      if (req.files) {
+        fileName = await uploadFile(req.files.photo, "./uploads/users");
+      }
 
-    const isoDob = dateToISOString(dob);
-    const userCount = await prisma.user.count();
+      const isoDob = dateToISOString(dob);
+      const userCount = await User.count({ transaction });
 
-    const user = await prisma.user.create({
-      data: {
+      const user = await User.create({
         ...userData,
         password: hashedPassword,
         dob: isoDob,
         role: userCount === 0 ? "Admin" : "Voter",
         photo: !req.files ? null : `users/${fileName}`,
-      },
-    });
+      }, { transaction });
 
-    res.json({ status: "success", data: user });
-  } catch (error) {
-    if (fileName) {
-      await unlink(`./uploads/users/${fileName}`);
+      await transaction.commit();
+      res.json({ status: "success", data: user });
+    } catch (error) {
+      await transaction.rollback();
+      if (fileName) {
+        await unlink(`./uploads/users/${fileName}`);
+      }
+      throw error;
     }
-
+  } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ status: "failed", error: "Error creating user" });
   }
@@ -120,45 +147,56 @@ const bulkCreateUsers = async (req, res) => {
     fs.unlinkSync(filePath);
 
     // Hash passwords and format date of birth
-    const userCount = await prisma.user.count();
-    const hashedUsers = await Promise.all(
-      usersData.map(async (user) => {
-        const formattedDob = new Date(user.dob).toISOString();
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        return {
-          ...user,
-          password: hashedPassword,
-          dob: formattedDob,
-          role: userCount === 0 ? "Admin" : "Voter",
-        };
-      })
-    );
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const userCount = await User.count({ transaction });
+      const hashedUsers = await Promise.all(
+        usersData.map(async (user) => {
+          const formattedDob = new Date(user.dob).toISOString();
+          const hashedPassword = await bcrypt.hash(user.password, 10);
+          return {
+            ...user,
+            password: hashedPassword,
+            dob: formattedDob,
+            role: userCount === 0 ? "Admin" : "Voter",
+          };
+        })
+      );
 
-    // Check for existing phone numbers in the database
-    const createdUsers = [];
-    for (const user of hashedUsers) {
-      try {
-        const existingUser = await prisma.user.findUnique({
-          where: {
-            phone: `0${user.phone}`, // Convert phone number to 0$user.phone,
-          },
-        });
-
-        if (!existingUser) {
-          const createdUser = await prisma.user.create({
-            data: { ...user, phone: `0${user.phone}` },
+      // Check for existing phone numbers in the database
+      const createdUsers = [];
+      for (const user of hashedUsers) {
+        try {
+          const existingUser = await User.findOne({
+            where: {
+              phone: `0${user.phone}`,
+            },
+            transaction
           });
-          createdUsers.push(createdUser);
-        }
-      } catch (error) {
-        console.error(
-          `Error creating user with phone number ${user.phone}:`,
-          error
-        );
-      }
-    }
 
-    res.json({ status: "success", data: "Users uploaded successfully." });
+          if (!existingUser) {
+            const createdUser = await User.create({
+              ...user,
+              phone: `0${user.phone}`,
+            }, { transaction });
+            createdUsers.push(createdUser);
+          }
+        } catch (error) {
+          console.error(
+            `Error creating user with phone number ${user.phone}:`,
+            error
+          );
+          throw error;
+        }
+      }
+
+      await transaction.commit();
+      res.json({ status: "success", data: "Users uploaded successfully." });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error("Error during bulk user creation:", error);
     res.status(500).json({ status: "failed", error: "Internal Server Error" });
@@ -166,52 +204,71 @@ const bulkCreateUsers = async (req, res) => {
 };
 
 // Update an existing user
-let updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   const { id } = req.params;
   const { password, dob, ...userData } = req.body;
   let fileName;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    if (req.files) {
-      fileName = await uploadFile(req.files.photo, "./uploads/users");
+    const transaction = await sequelize.transaction();
+    
+    try {
+      if (req.files) {
+        fileName = await uploadFile(req.files.photo, "./uploads/users");
+      }
+
+      const isoDob = dateToISOString(dob);
+
+      const updatedUser = await User.update(
+        {
+          ...userData,
+          password: password ? await bcrypt.hash(password, 10) : undefined,
+          dob: isoDob,
+          photo: !req.files ? null : `users/${fileName}`,
+        },
+        {
+          where: { id: parseInt(id) },
+          returning: true,
+          transaction
+        }
+      );
+
+      await transaction.commit();
+      res.json({ status: "success", data: updatedUser[1][0] });
+    } catch (error) {
+      await transaction.rollback();
+      if (fileName) {
+        await unlink(`./uploads/users/${fileName}`);
+      }
+      throw error;
     }
-
-    const isoDob = dateToISOString(dob);
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        ...userData,
-        password: hashedPassword,
-        dob: isoDob,
-        photo: !req.files ? null : `users/${fileName}`,
-      },
-    });
-
-    res.json({ status: "success", data: updatedUser });
-    console.log("User updated successfully");
   } catch (error) {
-    if (fileName) {
-      await unlink(`./uploads/users/${fileName}`);
-    }
-
     console.error("Error updating user:", error);
-    res.json({ status: "failed", error: "Error updating user" });
+    res.status(500).json({ status: "failed", error: "Error updating user" });
   }
 };
 
 // Delete an existing user
-let deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedUser = await prisma.user.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.json({ status: "success", data: deletedUser });
+    const transaction = await sequelize.transaction();
+    
+    try {
+      const deletedUser = await User.destroy({
+        where: {
+          id: parseInt(id),
+        },
+        transaction
+      });
+
+      await transaction.commit();
+      res.json({ status: "success", data: deletedUser });
+      console.log("User deleted successfully");
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ status: "failed", error: "Error deleting user" });
@@ -221,40 +278,60 @@ let deleteUser = async (req, res) => {
 // Login user and generate token
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
+
+  try {
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        status: "failed",
+        error: "Invalid credentials",
+      });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({
+        status: "failed",
+        error: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET || "your-secret-key"
+    );
+
+    res.json({
+      status: "success",
+      data: {
+        token,
+        user: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ status: "failed", error: "Internal server error" });
   }
-
-  const passwordMatch = await bcrypt.compare(password, user.password);
-
-  if (!passwordMatch) {
-    return res.status(401).json({ error: "Invalid password" });
-  }
-
-  const token = jwt.sign(
-    { userId: user.id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-
-  res.json({ token });
 };
 
 const userDetail = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: {
-        id: true,
-        first_name: true,
-        last_name: true,
-        email: true,
-        dob: true,
-        gender: true,
-        photo: true,
-        username: true,
-        role: true,
+    const user = await User.findByPk(req.userId, {
+      attributes: {
+        exclude: ["password"],
       },
     });
 
@@ -267,61 +344,102 @@ const userDetail = async (req, res) => {
 
 // Logout user and clear token
 const logoutUser = async (req, res) => {
-  res
-    .clearCookie("token")
-    .json({ status: "success", data: "Logged out successfully" });
+  try {
+    res.clearCookie("token");
+    res.json({ status: "success", data: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ status: "failed", error: "Error logging out" });
+  }
 };
 
-const forgotPassword = (req, res) => {
+const forgotPassword = async (req, res) => {
   const { email } = req.body;
-  // const otp = Math.floor(100000 + Math.random() * 900000);
-  // with otp generator
-  const otp = OTPGenerator.generate(6, {
-    upperCase: true,
-    specialChars: false,
-  });
-  // Define the email message
-  const mailOptions = {
-    from: email,
-    to: [process.env.EMAIL_USERNAME, "abass@alusofttechnologies.com"],
-    subject: "Password Reset",
-    text: `Your OTP is: ${otp}`,
-  };
 
-  // Send the email using NodeMailer
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      return console.log(error);
+  try {
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        error: "User not found",
+      });
     }
-    console.log("Email sent: " + info.response);
-    res.json({ status: "success", message: `OTP sent to ${email}` });
-  });
+
+    const otp = OTPGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    // Store OTP in session or database
+    req.session.resetOTP = {
+      email,
+      otp,
+      expiresAt: Date.now() + 300000, // 5 minutes
+    };
+
+    // Send OTP via email
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}. This will expire in 5 minutes.`,
+    });
+
+    res.json({
+      status: "success",
+      data: "OTP sent successfully",
+    });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ status: "failed", error: "Internal server error" });
+  }
 };
 
 const resetPassword = async (req, res) => {
-  const { otp, email, password } = req.body;
+  const { otp, password } = req.body;
 
-  // Verify OTP
-  if (otp) {
-    try {
-      // Hash and store new password in database
-      const hashedPassword = await bcrypt.hash(password, 10);
-      // Update user document with new password
-      const user = await prisma.user.update({
-        where: {
-          email,
-        },
-        data: {
-          password: hashedPassword,
-        },
+  try {
+    const resetOTP = req.session.resetOTP;
+
+    if (!resetOTP || resetOTP.expiresAt < Date.now()) {
+      return res.status(400).json({
+        status: "failed",
+        error: "Invalid or expired OTP",
       });
-      res.json({ status: "success", data: "Password reset successful" });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
     }
-  } else {
-    res.send("Invalid OTP");
+
+    if (resetOTP.otp !== otp) {
+      return res.status(400).json({
+        status: "failed",
+        error: "Invalid OTP",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.update(
+      {
+        password: hashedPassword,
+      },
+      {
+        where: {
+          email: resetOTP.email,
+        },
+      }
+    );
+
+    delete req.session.resetOTP;
+
+    res.json({
+      status: "success",
+      data: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ status: "failed", error: "Internal server error" });
   }
 };
 

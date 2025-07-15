@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
@@ -42,4 +43,4 @@ app.listen(PORT, () =>
   )
 );
 
-module.export = app;
+module.exports = app;
